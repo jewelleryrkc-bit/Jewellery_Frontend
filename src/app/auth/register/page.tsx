@@ -30,8 +30,13 @@ export default function Register() {
           contact: Number(data.contact),
         },
       };
+  console.log("response");
 
       const response = await registerUser({ variables });
+      // console.log("Full register response:", JSON.stringify(response, null, 2));
+
+      
+      
 
       if (response?.data?.register?.user) {
         router.push("/auth/verify");

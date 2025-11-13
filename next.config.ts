@@ -15,7 +15,7 @@ module.exports = {
     if (!isServer && isProd) {
       config.plugins.push(
         new GenerateSW({
-          swDest: 'static/service-worker.js',
+          swDest: '/service-worker.js',
           clientsClaim: true,
           skipWaiting: true,
           runtimeCaching: [

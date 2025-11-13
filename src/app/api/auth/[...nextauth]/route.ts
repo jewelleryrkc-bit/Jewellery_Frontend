@@ -1,7 +1,7 @@
 import NextAuth, { AuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
-import { apolloClient } from "../../../lib/apolloClient"; 
-import { LOGIN_MUTATION, LOGIN_COMPANY } from "../../../graphql/mutations";
+import { apolloClient } from "../../../../lib/apolloClient"; 
+import { LOGIN_MUTATION, LOGIN_COMPANY } from "../../../../graphql/mutations";
 import { setCookie } from "cookies-next";
 
 export const authOptions: AuthOptions = {
