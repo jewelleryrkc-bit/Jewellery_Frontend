@@ -1,0 +1,19 @@
+@import "tailwindcss";
+
+
+@layer base {
+    html {
+      font-family: 'Inter', sans-serif; /* or any font you're using */
+      font-size: 13.5px; /* Global scaling */
+      scroll-behavior: smooth;
+    }
+  }
+
+main {
+  padding-top: var(--header-height);
+
+}
+
+.akash {
+  background-color: blueviolet;
+}
