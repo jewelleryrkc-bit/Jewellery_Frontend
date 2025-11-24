@@ -1,8 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
-console.log("correct file!!");
-
-
 
 import { useForm } from "react-hook-form";
 import { useMutation, useQuery } from "@apollo/client";
@@ -13,7 +10,7 @@ import {
   GET_SUBCATEGORIES,
 } from "../../../../graphql/queries";
 import { useEffect, useState, useRef } from "react";
-// import { redirect } from "next/navigation";
+import { redirect } from "next/navigation";
 import AnotherHeader from "../../../../components/anotherheader";
 import Footer from "../../../../components/Footer";
 import Image from "next/image";
@@ -66,6 +63,11 @@ type AddProductFormInputs = {
   vintage: string;
   wholesale: string;
   variations?: Variation[];
+};
+
+type UploadedImage = {
+  url: string;
+  key: string;
 };
 
 const colors = [
@@ -381,7 +383,6 @@ export default function AddProduct() {
   const featuresString = selectedFeatures.join(", ");
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [selectedImages, setSelectedImages] = useState<File[]>([]);
-  
 
   const handleFiles = (files: FileList) => {
     const newFiles = Array.from(files);
@@ -404,11 +405,25 @@ export default function AddProduct() {
     }
   };
 
+  const uploadImagesToBackend = async () => {
+    if (selectedImages.length === 0) return [];
+
+    const formData = new FormData();
+    selectedImages.forEach((img) => formData.append("images", img));
+
+    const res = await fetch("http://localhost:4000/upload/images", {
+      method: "POST",
+      body: formData,
+    });
+
+    const data = await res.json();
+    return data.images || [];
+  };
 
   useEffect(() => {
     if (!cloading && (!cdata || !cdata.me)) {
-      // redirect("/");
-       window.location.href = "/";
+      redirect("/");
+      // window.location.href = "/";
     }
   }, [cdata, cloading]);
 
@@ -488,6 +503,9 @@ export default function AddProduct() {
     }
 
     try {
+      const uploadedImages = await uploadImagesToBackend();
+      const imageUrls = uploadedImages.map((img: UploadedImage) => img.url);
+
       const response = await addProduct({
         variables: {
           input: {
@@ -530,6 +548,7 @@ export default function AddProduct() {
             signed: data.signed,
             vintage: data.vintage,
             wholesale: data.wholesale,
+            imageUrls,
             variations: variations.map((v) => ({
               size: v.size,
               color: v.color,
@@ -557,28 +576,28 @@ export default function AddProduct() {
   return (
     <>
       <AnotherHeader />
-<div className="h-px w-5/6 mx-auto bg-gray-200 my-6" />
+      <div className="h-px w-5/6 mx-auto bg-gray-200 my-6" />
       <div className="max-w-4xl mx-auto mt-5 p-8 bg-white rounded-lg shadow-md">
         <h2 className="text-2xl font-bold text-gray-800 mb-6">
-          Item Specifics addgdslf
+          Item Specifics
         </h2>
-        
+
         {errorMessage && (
           <p className="text-red-500 mb-4 p-3 bg-red-50 rounded-lg">
             {errorMessage}
           </p>
         )}
 
-        
-
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
           {/* Photos Section */}
           <div className="space-y-4">
-            <h3 className="text-lg font-semibold text-gray-700" onClick={()=>console.log("data")}>Photos</h3>
+            <h3 className="text-lg font-semibold text-gray-700">Photos</h3>
             <div
               className="w-full h-48 border-2 border-dashed border-gray-300 rounded-lg flex flex-col items-center justify-center text-gray-500 bg-gray-50 hover:bg-gray-100 transition-colors cursor-pointer"
-               onClick={() => console.log("CLICK WORKING")}
-         >
+              onClick={() => fileInputRef.current?.click()}
+              onDragOver={onDragOver}
+              onDrop={onDrop}
+            >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 className="h-10 w-10 mb-2"
@@ -598,39 +617,38 @@ export default function AddProduct() {
             </div>
 
             <input
-                type="file"
-                multiple
-                accept="image/*"
-                ref={fileInputRef}
-                className="hidden"
-                onChange={(e) => e.target.files && handleFiles(e.target.files)}
-              />
+              type="file"
+              multiple
+              accept="image/*"
+              ref={fileInputRef}
+              className="hidden"
+              onChange={(e) => {
+                if (e.target.files) handleFiles(e.target.files);
+              }}
+            />
 
             {/* Preview Selected Images */}
             {selectedImages.length > 0 && (
               <div className="flex flex-wrap gap-2 mt-2">
                 {selectedImages.map((file, idx) => {
-                  const previewUrl = URL.createObjectURL(file);
+                  const preview = URL.createObjectURL(file);
                   return (
                     <div
                       key={idx}
                       className="w-20 h-20 relative rounded-md overflow-hidden border border-gray-300"
                     >
                       <Image
-                        src={previewUrl}
+                        src={preview}
                         alt={`Preview ${idx}`}
                         fill
                         className="object-cover"
-                        onLoad={() => URL.revokeObjectURL(previewUrl)}
+                        onLoad={() => URL.revokeObjectURL(preview)}
                       />
+
                       <button
                         type="button"
                         className="absolute top-1 right-1 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs"
-                        onClick={() =>
-                          setSelectedImages((prev) =>
-                            prev.filter((_, i) => i !== idx)
-                          )
-                        }
+                        onClick={() => removeImage(idx)}
                       >
                         &times;
                       </button>
