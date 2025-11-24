@@ -4,7 +4,7 @@ import "./globals.css";
 import ApolloProviderWrapper from "../providers/ApolloProvider";
 import ClientSessionProvider from "../providers/ClientSessionProvider";
 import { CurrencyProvider } from "@/providers/CurrencyContext";
-import RegisterServiceWorker from "@/components/RegisterServiceWorker";
+// import RegisterServiceWorker from "@/components/RegisterServiceWorker";
 
 // Optimized font loading with next/font
 const inter = Inter({
@@ -50,7 +50,7 @@ export default function RootLayout({
   return (
     <html lang="en" className={inter.variable}>
       <body>
-        <RegisterServiceWorker />
+        {/* <RegisterServiceWorker /> */}
         <ClientSessionProvider>
           <ApolloProviderWrapper>
             <CurrencyProvider>

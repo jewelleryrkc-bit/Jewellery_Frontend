@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
+alert("hi");
 import { useQuery } from "@apollo/client";
 import { useState } from "react";
 import { GET_COMPANIES } from "@/graphql/queries";

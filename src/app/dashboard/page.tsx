@@ -1,6 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
-
 import { useQuery } from "@apollo/client";
 import TopHeader from "../../components/TopHeader";
 import Footer from "../../components/Footer";

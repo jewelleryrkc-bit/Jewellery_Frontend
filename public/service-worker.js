@@ -1,14 +1,13 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 // public/service-worker.js
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 self.addEventListener("install", (event) => {
-  console.log("✅ Service Worker installed");
+  console.log("Service Worker installed");
   self.skipWaiting();
 });
 
 self.addEventListener("activate", (event) => {
-  console.log("🚀 Service Worker activated");
+  console.log("Service Worker activated");
 });
 
 self.addEventListener("fetch", (event) => {

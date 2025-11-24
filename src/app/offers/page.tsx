@@ -6,11 +6,11 @@ export default function OffersPage() {
   return (
     <div className="bg-white min-h-screen text-gray-900 font-[Gidole,sans-serif]">
       {/* Hero Banner */}
-      <section className="w-full h-[65vh] flex items-center justify-center bg-[url('/banner-placeholder.jpg')] bg-cover bg-center relative">
+      <section className="w-full h-[65vh] flex items-center justify-center bg-[url('/banner-placeholder.jpg')] ">
         <div className="absolute inset-0 bg-black/30" />
         <div className="relative z-10 text-center px-4">
           <h1 className="text-4xl sm:text-5xl font-light text-white tracking-wide">
-            Timeless Elegance
+            Timeless Elegance 
           </h1>
           <p className="mt-4 text-lg text-white/80">
             Exclusive deals on our handcrafted jewelry collections

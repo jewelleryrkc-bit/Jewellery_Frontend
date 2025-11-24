@@ -1,6 +1,8 @@
 /* eslint-disable @next/next/no-img-element */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
+
+
 import LoadingPage from "@/components/LoadingPage";
 import { SELLER_PRODUCT_PAGINATION, GET_PARENT_CATEGORIES } from "../../../graphql/queries";
 import { useQuery } from "@apollo/client";

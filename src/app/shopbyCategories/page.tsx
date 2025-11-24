@@ -7,25 +7,26 @@ import Image from "next/image";
 import { ChevronRight } from "lucide-react";
 import { Skeleton } from "@/components/skeleton";
 
+
 const categoryDetails = {
   rings: {
-    image: "/images/categories/rings.jpg",
+    image: "/images/categories/rings/rings_01.jpg",
     description: "Timeless symbols of love and commitment, crafted to perfection."
   },
   necklaces: {
-    image: "/images/categories/necklaces.jpg",
+    image: "/images/categories/necklaces/necklace_01.jpg",
     description: "Elegant pieces that gracefully accentuate your neckline."
   },
   earrings: {
-    image: "/images/categories/earrings.jpg",
+    image: "/images/categories/earrings/earrings_02.png",
     description: "Delicate adornments to frame your face with subtle brilliance."
   },
   bracelets: {
-    image: "/images/categories/bracelets.jpg",
+    image: "/images/categories/bracelets/bracelet_01.png",
     description: "Wristwear that makes a quiet yet powerful statement."
   },
   default: {
-    image: "/images/categories/jewelry-default.jpg",
+    image: "/images/categories/jewelry-default/jewelry-default_01.png",
     description: "Exquisitely crafted pieces for every occasion."
   }
 };
@@ -106,6 +107,8 @@ export default function ShopByCategories() {
 
             {/* Category Sections */}
             {data?.parentCategories?.map((category: { slug: string; name: string }, index: number) => {
+              console.log("data",data);
+              
               const details = categoryDetails[category.slug as keyof typeof categoryDetails] || categoryDetails.default;
               return (
                 <div 
