@@ -7,28 +7,29 @@ import Image from "next/image";
 import { ChevronRight } from "lucide-react";
 import { Skeleton } from "@/components/skeleton";
 
-
 const categoryDetails = {
   rings: {
     image: "/images/categories/rings/rings_01.jpg",
-    description: "Timeless symbols of love and commitment, crafted to perfection."
+    description:
+      "Timeless symbols of love and commitment, crafted to perfection.",
   },
   necklaces: {
     image: "/images/categories/necklaces/necklace_01.jpg",
-    description: "Elegant pieces that gracefully accentuate your neckline."
+    description: "Elegant pieces that gracefully accentuate your neckline.",
   },
   earrings: {
     image: "/images/categories/earrings/earrings_02.png",
-    description: "Delicate adornments to frame your face with subtle brilliance."
+    description:
+      "Delicate adornments to frame your face with subtle brilliance.",
   },
   bracelets: {
     image: "/images/categories/bracelets/bracelet_01.png",
-    description: "Wristwear that makes a quiet yet powerful statement."
+    description: "Wristwear that makes a quiet yet powerful statement.",
   },
   default: {
     image: "/images/categories/jewelry-default/jewelry-default_01.png",
-    description: "Exquisitely crafted pieces for every occasion."
-  }
+    description: "Exquisitely crafted pieces for every occasion.",
+  },
 };
 
 export default function ShopByCategories() {
@@ -63,7 +64,12 @@ export default function ShopByCategories() {
         {loading ? (
           <div className="space-y-24">
             {[...Array(4)].map((_, i) => (
-              <div key={i} className={`flex flex-col ${i % 2 ? 'md:flex-row-reverse' : 'md:flex-row'} gap-8 md:gap-16`}>
+              <div
+                key={i}
+                className={`flex flex-col ${
+                  i % 2 ? "md:flex-row-reverse" : "md:flex-row"
+                } gap-8 md:gap-16`}
+              >
                 <Skeleton className="h-96 w-full md:w-1/2 rounded-none" />
                 <div className="w-full md:w-1/2 flex items-center">
                   <Skeleton className="h-48 w-full" />
@@ -106,46 +112,62 @@ export default function ShopByCategories() {
             </div> */}
 
             {/* Category Sections */}
-            {data?.parentCategories?.map((category: { slug: string; name: string }, index: number) => {
-              console.log("data",data);
-              
-              const details = categoryDetails[category.slug as keyof typeof categoryDetails] || categoryDetails.default;
-              return (
-                <div 
-                  key={category.slug} 
-                  className={`flex flex-col ${index % 2 ? 'md:flex-row-reverse' : 'md:flex-row'} gap-8 md:gap-16`}
-                >
-                  <div className="w-full md:w-1/2">
-                    <div className="relative h-96">
-                      <Image
-                        src={details.image}
-                        alt={category.name}
-                        fill
-                        className="object-cover"
-                        style={{ objectPosition: 'center 30%' }}
-                      />
+            {/* {data?.parentCategories?.map((category: { slug: string; name: string }, index: number) */}
+
+            {data?.parentCategories?.map(
+              (
+                category: { slug: string; name: string; image?: string },
+                index: number
+              ) => {
+                
+                const details =
+                  categoryDetails[
+                    category.slug as keyof typeof categoryDetails
+                  ] || categoryDetails.default;
+                return (
+                  <div
+                    key={category.slug}
+                    className={`flex flex-col ${
+                      index % 2 ? "md:flex-row-reverse" : "md:flex-row"
+                    } gap-8 md:gap-16`}
+                  >
+                    <div className="w-full md:w-1/2">
+                      <div className="relative h-96">
+                        <Image
+                          src={
+                            category.image ||
+                            categoryDetails.default.image ||
+                            details.image
+                          }
+                          alt={category.name}
+                          fill
+                          className="object-cover"
+                          style={{ objectPosition: "center 30%" }}
+                          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                        />
+                      </div>
+                    </div>
+                    <div className="w-full md:w-1/2 flex items-center">
+                      <div className={index % 2 ? "md:pr-8" : "md:pl-8"}>
+                        <h2 className="text-2xl font-light text-gray-900 mb-4 tracking-tight">
+                          {category.name}
+                        </h2>
+                        <p className="text-gray-500 font-light mb-6">
+                          {details.description}
+                        </p>
+                        <Link
+                          href={`/category/${category.slug}`}
+                          className="text-xs text-gray-500 font-light hover:text-gray-900 transition-colors flex items-center"
+                        >
+                          Discover the collection
+                          <ChevronRight className="ml-1 h-3 w-3" />
+                        </Link>
+                      </div>
                     </div>
                   </div>
-                  <div className="w-full md:w-1/2 flex items-center">
-                    <div className={index % 2 ? 'md:pr-8' : 'md:pl-8'}>
-                      <h2 className="text-2xl font-light text-gray-900 mb-4 tracking-tight">
-                        {category.name}
-                      </h2>
-                      <p className="text-gray-500 font-light mb-6">
-                        {details.description}
-                      </p>
-                      <Link
-                        href={`/category/${category.slug}`}
-                        className="text-xs text-gray-500 font-light hover:text-gray-900 transition-colors flex items-center"
-                      >
-                        Discover the collection
-                        <ChevronRight className="ml-1 h-3 w-3" />
-                      </Link>
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
+                );
+              }
+            )}
           </>
         )}
       </div>

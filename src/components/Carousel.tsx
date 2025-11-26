@@ -51,7 +51,7 @@ export default function CompactFullScreenCarousel() {
   };
 
   return (
-    <div className="relative w-full h-[60vh] md:h-[90vh] max-h-[800px] overflow-hidden rounded-b-xl shadow-xl">
+    <div className="relative w-full h-[70vh] md:h-[100vh] max-h-[800px] overflow-hidden rounded-b-xl shadow-xl">
       {/* Slides container */}
       <div
         className="flex h-full transition-transform duration-700 ease-[cubic-bezier(0.33,1,0.68,1)]"

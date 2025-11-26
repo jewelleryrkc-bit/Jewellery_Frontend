@@ -1,22 +1,34 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
-'use client';
+"use client";
 
 import { useQuery, useMutation } from "@apollo/client";
 import { GET_CURRENTSELLER_PRODUCTS } from "../../../graphql/queries";
-import { UPDATE_PRODUCT_DETAILS, UPDATE_PRODUCTVAR_DETAILS, DELETE_PRODUCT } from "../../../graphql/mutations";
+import {
+  UPDATE_PRODUCT_DETAILS,
+  UPDATE_PRODUCTVAR_DETAILS,
+  DELETE_PRODUCT,
+} from "../../../graphql/mutations";
 import { useRouter } from "next/navigation";
 import { FormEvent, useEffect, useState } from "react";
 import AnotherHeader from "../../../components/anotherheader";
 import Footer from "../../../components/Footer";
 import LoadingPage from "../../../components/LoadingPage";
+import React from "react";
 
-export default function EditProductPage({ params }: { params: { id: string } }) {
-  const { id } = params;
-  const [activeTab, setActiveTab] = useState('details');
+export default function EditProductPage({
+  params,
+}: {
+  params: { id: string } | Promise<{ id: string }>;
+}) {
+  const resolvedParams = React.use(params as Promise<{ id: string }>);
+   const { id } = resolvedParams as { id: string };
+  const [activeTab, setActiveTab] = useState("details");
   const router = useRouter();
 
-  const [updatingVariationId, setUpdatingVariationId] = useState<string | null>(null);
+  const [updatingVariationId, setUpdatingVariationId] = useState<string | null>(
+    null
+  );
   const [isSavingAll, setIsSavingAll] = useState(false);
 
   const [formState, setFormState] = useState({
@@ -31,7 +43,11 @@ export default function EditProductPage({ params }: { params: { id: string } }) 
 
   const [variations, setVariations] = useState<any[]>([]);
 
-  const { data, loading: queryLoading, error: queryError } = useQuery(GET_CURRENTSELLER_PRODUCTS);
+  const {
+    data,
+    loading: queryLoading,
+    error: queryError,
+  } = useQuery(GET_CURRENTSELLER_PRODUCTS);
 
   const product = data?.myProducts?.find((p: any) => p.id === id);
 
@@ -44,16 +60,19 @@ export default function EditProductPage({ params }: { params: { id: string } }) 
         size: product.size || "",
         weight: product.weight || "",
         material: product.material || "",
-        stock: product.stock || 0
+        stock: product.stock || 0,
       });
-      
+
       if (product.variations) {
         setVariations([...product.variations]);
       }
     }
   }, [product]);
 
-  const [updateVariation, { loading: variationUpdating, error: variationUpdateError }] = useMutation(UPDATE_PRODUCTVAR_DETAILS, {
+  const [
+    updateVariation,
+    { loading: variationUpdating, error: variationUpdateError },
+  ] = useMutation(UPDATE_PRODUCTVAR_DETAILS, {
     refetchQueries: [{ query: GET_CURRENTSELLER_PRODUCTS }],
   });
 
@@ -68,14 +87,26 @@ export default function EditProductPage({ params }: { params: { id: string } }) 
   const handleUpdateAllVariations = async (e: FormEvent) => {
     e.preventDefault();
     setIsSavingAll(true);
-    
+
     try {
       const updatePromises = variations.map((variation, index) => {
         const form = e.currentTarget as HTMLFormElement;
-        const size = (form.elements.namedItem(`size-${index}`) as HTMLInputElement)?.value || '';
-        const color = (form.elements.namedItem(`color-${index}`) as HTMLInputElement)?.value || '';
-        const price = parseFloat((form.elements.namedItem(`price-${index}`) as HTMLInputElement)?.value || '0') || 0;
-        const stock = parseFloat((form.elements.namedItem(`stock-${index}`) as HTMLInputElement)?.value || '0') || 0;
+        const size =
+          (form.elements.namedItem(`size-${index}`) as HTMLInputElement)
+            ?.value || "";
+        const color =
+          (form.elements.namedItem(`color-${index}`) as HTMLInputElement)
+            ?.value || "";
+        const price =
+          parseFloat(
+            (form.elements.namedItem(`price-${index}`) as HTMLInputElement)
+              ?.value || "0"
+          ) || 0;
+        const stock =
+          parseFloat(
+            (form.elements.namedItem(`stock-${index}`) as HTMLInputElement)
+              ?.value || "0"
+          ) || 0;
 
         return updateVariation({
           variables: {
@@ -85,8 +116,8 @@ export default function EditProductPage({ params }: { params: { id: string } }) 
               color,
               price,
               stock,
-            }
-          }
+            },
+          },
         });
       });
 
@@ -98,14 +129,14 @@ export default function EditProductPage({ params }: { params: { id: string } }) 
     }
   };
 
-  const [updateProduct, { loading: mutationLoading, error: mutationError }] = 
+  const [updateProduct, { loading: mutationLoading, error: mutationError }] =
     useMutation(UPDATE_PRODUCT_DETAILS, {
       onCompleted: () => router.push("/dashboard"),
     });
 
   const [deleteProduct] = useMutation(DELETE_PRODUCT, {
     onCompleted: () => router.push("/dashboard"),
-  });  
+  });
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -125,16 +156,24 @@ export default function EditProductPage({ params }: { params: { id: string } }) 
     });
   };
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
     const { name, value } = e.target;
-    setFormState(prev => ({
+    setFormState((prev) => ({
       ...prev,
-      [name]: name === "price" || name === "stock" ? parseFloat(value) || 0 : value,
+      [name]:
+        name === "price" || name === "stock" ? parseFloat(value) || 0 : value,
     }));
   };
 
-  if (queryLoading) return <LoadingPage/>;
-  if (queryError) return <div className="p-4 text-red-500">Error loading product: {queryError.message}</div>;
+  if (queryLoading) return <LoadingPage />;
+  if (queryError)
+    return (
+      <div className="p-4 text-red-500">
+        Error loading product: {queryError.message}
+      </div>
+    );
 
   return (
     <>
@@ -146,20 +185,28 @@ export default function EditProductPage({ params }: { params: { id: string } }) 
 
         <div className="flex border-b mb-6">
           <button
-            className={`px-4 py-2 font-medium ${activeTab === 'details' ? 'border-b-2 border-blue-500 text-blue-600' : 'text-gray-500'}`}
-            onClick={() => setActiveTab('details')}
+            className={`px-4 py-2 font-medium ${
+              activeTab === "details"
+                ? "border-b-2 border-blue-500 text-blue-600"
+                : "text-gray-500"
+            }`}
+            onClick={() => setActiveTab("details")}
           >
             Product Details
           </button>
           <button
-            className={`px-4 py-2 font-medium ${activeTab === 'variations' ? 'border-b-2 border-blue-500 text-blue-600' : 'text-gray-500'}`}
-            onClick={() => setActiveTab('variations')}
+            className={`px-4 py-2 font-medium ${
+              activeTab === "variations"
+                ? "border-b-2 border-blue-500 text-blue-600"
+                : "text-gray-500"
+            }`}
+            onClick={() => setActiveTab("variations")}
           >
             Variations {variations?.length > 0 && `(${variations.length})`}
           </button>
         </div>
 
-        {activeTab === 'details' ? (
+        {activeTab === "details" ? (
           <form onSubmit={handleSubmit} className="space-y-8">
             <div>
               <label className="block font-semibold mb-1">Product Name</label>
@@ -286,27 +333,36 @@ export default function EditProductPage({ params }: { params: { id: string } }) 
               {variations?.length > 0 ? (
                 <div className="space-y-4">
                   {variations.map((variation: any, index: number) => (
-                    <div key={variation.id} className="p-4 border rounded-lg grid grid-cols-3 gap-4">
+                    <div
+                      key={variation.id}
+                      className="p-4 border rounded-lg grid grid-cols-3 gap-4"
+                    >
                       <div>
-                        <label className="block text-sm font-medium text-gray-700">Size</label>
+                        <label className="block text-sm font-medium text-gray-700">
+                          Size
+                        </label>
                         <input
                           type="text"
                           name={`size-${index}`}
-                          defaultValue={variation.size || ''}
+                          defaultValue={variation.size || ""}
                           className="w-full p-3 border border-gray-400 rounded-2xl"
                         />
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-gray-700">Color</label>
+                        <label className="block text-sm font-medium text-gray-700">
+                          Color
+                        </label>
                         <input
                           type="text"
                           name={`color-${index}`}
-                          defaultValue={variation.color || ''}
+                          defaultValue={variation.color || ""}
                           className="w-full p-3 border border-gray-400 rounded-2xl"
                         />
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-gray-700">Price</label>
+                        <label className="block text-sm font-medium text-gray-700">
+                          Price
+                        </label>
                         <input
                           type="number"
                           name={`price-${index}`}
@@ -316,7 +372,9 @@ export default function EditProductPage({ params }: { params: { id: string } }) 
                         />
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-gray-700">Stock</label>
+                        <label className="block text-sm font-medium text-gray-700">
+                          Stock
+                        </label>
                         <input
                           type="number"
                           name={`stock-${index}`}
@@ -326,9 +384,9 @@ export default function EditProductPage({ params }: { params: { id: string } }) 
                         />
                       </div>
                       <div className="col-span-3">
-                        <button 
-                          type="button" 
-                          onClick={() => removeVariation(index)} 
+                        <button
+                          type="button"
+                          onClick={() => removeVariation(index)}
                           className="text-red-500 font-bold"
                         >
                           Remove

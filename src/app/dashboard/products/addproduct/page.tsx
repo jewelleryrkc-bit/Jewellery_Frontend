@@ -22,47 +22,113 @@ type Variation = {
   stock: number;
 };
 
-type AddProductFormInputs = {
+// type AddProductFormInputs = {
+//   name: string;
+//   description: string;
+//   price: number;
+//   stock: number;
+//   material: string;
+//   size: string;
+//   weight: string;
+//   category: string;
+//   subcategory: string;
+//   brand: string;
+//   style: string;
+//   type: string;
+//   upc: string;
+//   color: string;
+//   mainStoneColor: string;
+//   department: string;
+//   metal: string;
+//   diamondColorGrade: string;
+//   mainStoneShape: string;
+//   mainStoneTreatment: string;
+//   settingStyle: string;
+//   country: string;
+//   itemLength: string;
+//   mainStoneCreation: string;
+//   totalCaratWeight: string;
+//   baseMetal: string;
+//   numberOfDiamonds: string;
+//   shape: string;
+//   theme: string;
+//   chainType: string;
+//   closure: string;
+//   charmType: string;
+//   features: string[];
+//   personalized: string;
+//   personalizeInstruction: string;
+//   mpn: string;
+//   signed: string;
+//   vintage: string;
+//   wholesale: string;
+//   variations?: Variation[];
+//   vendorId?: string;
+// };
+
+export type ProductVariationInput = {
+  size: string;
+  color: string;
+  price: number;
+  stock: number;
+  images?: { url: string; key: string }[];
+};
+
+export type ProductImageInput = {
+  url: string;
+  key: string;
+};
+
+export type AddProductFormInputs = {
+  // Required fields
   name: string;
   description: string;
   price: number;
   stock: number;
-  material: string;
-  size: string;
-  weight: string;
   category: string;
-  subcategory: string;
-  brand: string;
-  style: string;
-  type: string;
-  upc: string;
-  color: string;
-  mainStoneColor: string;
-  department: string;
-  metal: string;
-  diamondColorGrade: string;
-  mainStoneShape: string;
-  mainStoneTreatment: string;
-  settingStyle: string;
-  country: string;
-  itemLength: string;
-  mainStoneCreation: string;
-  totalCaratWeight: string;
-  baseMetal: string;
-  numberOfDiamonds: string;
-  shape: string;
-  theme: string;
-  chainType: string;
-  closure: string;
-  charmType: string;
-  features: string[];
-  personalized: string;
-  personalizeInstruction: string;
-  mpn: string;
-  signed: string;
-  vintage: string;
-  wholesale: string;
-  variations?: Variation[];
+
+  // Optional fields
+  subcategory?: string;
+  material?: string;
+  size?: string;
+  weight?: string;
+  color?: string;
+  brand?: string;
+  style?: string;
+  type?: string;
+  upc?: string;
+  mainStoneColor?: string;
+  department?: string;
+  metal?: string;
+  diamondColorGrade?: string;
+  mainStoneShape?: string;
+  mainStoneTreatment?: string;
+  settingStyle?: string;
+  itemLength?: string;
+  country?: string;
+  mainStoneCreation?: string;
+  totalCaratWeight?: string;
+  baseMetal?: string;
+  numberOfDiamonds?: string;
+  shape?: string;
+  theme?: string;
+  chainType?: string;
+  closure?: string;
+  charmType?: string;
+  features?: string;
+  personalized?: string;
+  personalizeInstruction?: string;
+  mpn?: string;
+  signed?: string;
+  vintage?: string;
+  wholesale?: string;
+
+  // Variations and images
+  variations?: ProductVariationInput[];
+  images?: ProductImageInput[];
+
+  // Admin only (optional)
+  vendorId?: string;
 };
 
 type UploadedImage = {
@@ -383,6 +449,7 @@ export default function AddProduct() {
   const featuresString = selectedFeatures.join(", ");
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [selectedImages, setSelectedImages] = useState<File[]>([]);
+  
 
   const handleFiles = (files: FileList) => {
     const newFiles = Array.from(files);
@@ -477,7 +544,7 @@ export default function AddProduct() {
     );
   };
 
-  const onSubmit = async (data: AddProductFormInputs) => {
+  const onSubmit = async (data:AddProductFormInputs) => {
     // Validate variations
     for (const [index, variation] of variations.entries()) {
       if (
@@ -502,62 +569,51 @@ export default function AddProduct() {
       return;
     }
 
+    if (selectedImages.length === 0) {
+      setErrorMessage("At least one product image is required.");
+      return;
+    }
+
     try {
       const uploadedImages = await uploadImagesToBackend();
-      const imageUrls = uploadedImages.map((img: UploadedImage) => img.url);
+      // const imageUrls = uploadedImages.map((img: UploadedImage) => img.url);
+      const imagesInput = uploadedImages.map((img: UploadedImage) => ({
+        url: img.url,
+        key: img.key,
+      }));
 
-      const response = await addProduct({
-        variables: {
-          input: {
-            name: data.name,
-            description: data.description,
-            price: data.price,
-            stock: data.stock,
-            material: data.material,
-            size: data.size,
-            weight: data.weight,
-            category: data.category,
-            subcategory: data.subcategory,
-            brand: data.brand,
-            style: data.style,
-            type: data.type,
-            upc: data.upc,
-            color: data.color,
-            mainStoneColor: data.mainStoneColor,
-            department: data.department,
-            metal: data.metal,
-            diamondColorGrade: data.diamondColorGrade,
-            mainStoneShape: data.mainStoneShape,
-            mainStoneTreatment: data.mainStoneTreatment,
-            settingStyle: data.settingStyle,
-            country: data.country,
-            itemLength: data.itemLength,
-            mainStoneCreation: data.mainStoneCreation,
-            totalCaratWeight: data.totalCaratWeight,
-            baseMetal: data.baseMetal,
-            numberOfDiamonds: data.numberOfDiamonds,
-            shape: data.shape,
-            theme: data.theme,
-            chainType: data.chainType,
-            closure: data.closure,
-            charmType: data.charmType,
-            features: featuresString,
-            personalized: data.personalized,
-            personalizeInstruction: data.personalizeInstruction,
-            mpn: data.mpn,
-            signed: data.signed,
-            vintage: data.vintage,
-            wholesale: data.wholesale,
-            imageUrls,
-            variations: variations.map((v) => ({
-              size: v.size,
-              color: v.color,
-              price: v.price,
-              stock: v.stock,
-            })),
-          },
-        },
-      });
+      
+      const productInput = {
+        ...data,
+        variations: variations,
+        features: featuresString,
+        ...(data.subcategory ? { subcategory: data.subcategory } : {}),
+      };
+
+       const variables: any = {
+      input: {
+        ...productInput,
+        images: imagesInput,   // <-- VERY IMPORTANT
+      },
+    }
+    
+      // Include vendorId only if admin
+    if (data.vendorId) {
+      variables.input.vendorId = data.vendorId;
+    }
+
+      // Execute mutation
+      const response = await addProduct({ variables });
+      
+      // const response = await addProduct({
+      //   variables: {
+      //     input: {
+      //       input: productInput,
+      //       images: imagesInput,
+      //       vendorId: vendorId,
+      //     },
+      //   },
+      // });
 
       if (response.data?.createProduct?.id) {
         window.location.href = "/dashboard";
