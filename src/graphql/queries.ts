@@ -121,29 +121,36 @@ export const GET_CATEGORIES = gql`
 `;
 
 export const CATEGORY_BY_SLUG = gql`
-   query($slug: String!) {
+  query($slug: String!) {
     categoryBySlug(slug: $slug) {
       id
       name
       slug
       products {
+        id
         name
-        price
         slug
+        price
         reviewCount
         averageRating
         soldCount
-        reviewCount
+        material
+        images {
+          url
+          key
+        }
         category {
           name
         }
+      }
+      subcategories {
+        id
+        name
         slug
-        material
       }
     }
   }
 `;
-
 export const GET_PARENT_CATEGORIES = gql`
   query {
     parentCategories {
@@ -920,6 +927,10 @@ export const GET_PRODUCTS_BY_CATEGORY = gql `
       reviewCount
       price
       material
+        images {
+      url
+      key
+    }
       reviews {
       rating
       }
