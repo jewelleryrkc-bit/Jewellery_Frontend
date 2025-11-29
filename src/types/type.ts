@@ -1,3 +1,8 @@
+export type ProductImageInput = {
+  url: string;
+  key: string;
+};
+
 export interface Wishlist {
     variation: {
        id: string;

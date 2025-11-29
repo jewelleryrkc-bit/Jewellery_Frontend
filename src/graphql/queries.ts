@@ -90,6 +90,11 @@ export const GET_WISHLISTS = gql `
       size
       color
       price
+      }
+      image{
+      id
+        url
+        key
       }  
     }
   }
@@ -136,6 +141,7 @@ export const CATEGORY_BY_SLUG = gql`
         soldCount
         material
         images {
+        id
           url
           key
         }
@@ -194,6 +200,11 @@ export const ALL_PRODUCTS_QUERY = gql `
         price
         size
       }
+         images {
+        id
+        url
+        key
+      }
     }
   }
 `;
@@ -223,6 +234,11 @@ export const ALL_PRODUCTS_QUERY_FOR_ADMIN = gql `
         color
         price
         size
+      }
+      images {
+        id
+        url
+        key
       }
     }
   }
@@ -327,6 +343,11 @@ export const GET_PRODUCT_BY_ID = gql `
     company {
       cname
     }
+    images {
+      id
+      url
+      key
+    }
   }
 }
 `;
@@ -377,6 +398,11 @@ export const GET_PRODUCT_BY_SLUG = gql`
       signed
       vintage
       wholesale
+       images {
+        id
+        key
+        url
+      }
       reviews {
         id
         comment
@@ -442,6 +468,11 @@ export const FILTERED_PRODUCTS_QUERY = gql`
       price
       size
       }  
+      images {
+        id
+        key
+        url
+      }
     }
   }
 `;
@@ -593,6 +624,11 @@ export const GET_SIMILAR_PRODUCTS = gql `
     reviewCount
     description
     material
+    images {
+      id
+      key
+      url
+    }
   }
 }
 `;
@@ -690,6 +726,11 @@ export const GET_CURRENTSELLER_PRODUCTS = gql `
     company {
       cname
     }
+      images {
+        id
+        key
+        url
+      }
   }
 }
 `;
@@ -780,6 +821,11 @@ export const GET_CART_ITEMS = gql`
         size
         color
         price
+      }
+        image{
+        id
+        key
+        url
       }
     }
   }
@@ -928,6 +974,7 @@ export const GET_PRODUCTS_BY_CATEGORY = gql `
       price
       material
         images {
+        id
       url
       key
     }
@@ -964,6 +1011,11 @@ export const GET_TOP_RATED_PRODUCTS = gql `
       }
       reviews {
         rating
+      }
+      images {
+        id
+        url
+        key
       }
     }
   }

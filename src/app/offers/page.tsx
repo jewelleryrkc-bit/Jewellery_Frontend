@@ -51,7 +51,7 @@ export default function OffersPage() {
       </section>
 
       {/* Final CTA */}
-      <section className="bg-gray-50 py-20 text-center px-6 mb-10">
+      <section className="bg-gray-50 py-20 text-center px-6 mb-10 bg-[url('/images/t4.png')]" >
         <h2 className="text-3xl font-light text-gray-800">Crafted to Shine</h2>
         <p className="text-gray-500 mt-3 text-sm sm:text-base">
           Discover timeless pieces that make every moment sparkle

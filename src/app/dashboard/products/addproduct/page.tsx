@@ -14,6 +14,7 @@ import { redirect } from "next/navigation";
 import AnotherHeader from "../../../../components/anotherheader";
 import Footer from "../../../../components/Footer";
 import Image from "next/image";
+import {ProductImageInput} from "../../../../types/type"
 
 type Variation = {
   size: string;
@@ -74,10 +75,10 @@ export type ProductVariationInput = {
   images?: { url: string; key: string }[];
 };
 
-export type ProductImageInput = {
-  url: string;
-  key: string;
-};
+// export type ProductImageInput = {
+//   url: string;
+//   key: string;
+// };
 
 export type AddProductFormInputs = {
   // Required fields

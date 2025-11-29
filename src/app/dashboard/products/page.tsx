@@ -390,7 +390,7 @@ export default function SellerProducts() {
                                                     <div className="w-12 h-12 md:w-16 md:h-16 bg-gray-100 flex items-center justify-center rounded-md overflow-hidden relative">
                                                         {product.images && product.images.length > 0 ? (
                                                             <img 
-                                                                src={product.images[0]} 
+                                                                src={product.images[0].url} 
                                                                 alt={product.name}
                                                                 className="w-full h-full object-cover"
                                                             />

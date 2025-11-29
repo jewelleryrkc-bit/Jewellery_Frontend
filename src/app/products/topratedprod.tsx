@@ -12,6 +12,7 @@ import { HeartIcon } from "@heroicons/react/24/outline";
 import { ADD_TO_WISHLIST } from "../../graphql/mutations";
 import toast from "react-hot-toast";
 import useSWR from "swr";
+import Image from "next/image";
 
 export default function TopRatedProducts() {
   const { data: wishlistData } = useSWR(GET_WISHLISTS);
@@ -98,7 +99,18 @@ export default function TopRatedProducts() {
                 <div className="aspect-square bg-gray-50 relative overflow-hidden">
                   {/* Replace with actual Image component */}
                   <div className="absolute inset-0 flex items-center justify-center">
-                    <span className="text-gray-300 text-xs sm:text-sm">Product Image</span>
+                    {product.images && product.images.length > 0 ? (
+                                         <Image
+                                           src={product.images[0].url}
+                                           alt={product.name}
+                                           layout="fill"
+                                           objectFit="cover"
+                                         />
+                                       ) : (
+                                         <span className="text-gray-400 text-sm text-center px-2">
+                                          {product.name}
+                                         </span>
+                                       )}
                   </div>
                   {new Date(product.createdAt) > new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) && (
                     <span className="absolute top-1.5 left-1.5 sm:top-2 sm:left-2 bg-white text-gray-600 text-2xs sm:text-xs font-light px-1.5 sm:px-2 py-0.5">
