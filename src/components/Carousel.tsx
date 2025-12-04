@@ -62,8 +62,11 @@ export default function CompactFullScreenCarousel() {
             src={slide.image}
             alt={slide.title}
             fill
+            style={{ objectFit: "cover" }}
             className="object-cover"
-            priority={index === 0}
+            priority
+            // priority={index === 0}
+            // fetchPriority={index === 0 ? "high" : "auto"}
           />
 
           {/* Overlay for readability */}
@@ -95,7 +98,9 @@ export default function CompactFullScreenCarousel() {
             key={idx}
             onClick={() => goToSlide(idx)}
             className={`h-2.5 w-2.5 md:h-2 md:w-2 rounded-full transition-all duration-300 ${
-              idx === currentIndex ? "bg-white md:w-4" : "bg-white/50 hover:bg-white/70"
+              idx === currentIndex
+                ? "bg-white md:w-4"
+                : "bg-white/50 hover:bg-white/70"
             }`}
             aria-label={`Go to slide ${idx + 1}`}
           ></button>
@@ -107,7 +112,9 @@ export default function CompactFullScreenCarousel() {
         <>
           <button
             onClick={() =>
-              setCurrentIndex((prev) => (prev === 0 ? slides.length - 1 : prev - 1))
+              setCurrentIndex((prev) =>
+                prev === 0 ? slides.length - 1 : prev - 1
+              )
             }
             className="hidden md:flex absolute left-4 top-1/2 -translate-y-1/2 bg-white/30 hover:bg-white/50 text-white p-2 rounded-full z-20 transition-all duration-300"
           >
@@ -115,7 +122,9 @@ export default function CompactFullScreenCarousel() {
           </button>
           <button
             onClick={() =>
-              setCurrentIndex((prev) => (prev === slides.length - 1 ? 0 : prev + 1))
+              setCurrentIndex((prev) =>
+                prev === slides.length - 1 ? 0 : prev + 1
+              )
             }
             className="hidden md:flex absolute right-4 top-1/2 -translate-y-1/2 bg-white/30 hover:bg-white/50 text-white p-2 rounded-full z-20 transition-all duration-300"
           >

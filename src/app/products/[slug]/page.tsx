@@ -244,12 +244,7 @@ export default function ProductPage() {
           { id: "4", src: "/images/productplaceholder/p4.jpg" },
         ];
 
-  // const productImages = [
-  //   { id: 1, src: "/images/productplaceholder/p1.jpg" },
-  //   { id: 2, src: "/images/productplaceholder/p2.jpg" },
-  //   { id: 3, src: "/images/productplaceholder/p3.jpg" },
-  //   { id: 4, src: "/images/productplaceholder/p4.jpg" },
-  // ];
+ 
 
   return (
     <>

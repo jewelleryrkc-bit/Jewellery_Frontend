@@ -84,18 +84,18 @@ export const GET_WISHLISTS = gql `
         slug
         averageRating
         reviewCount
+        images {
+        id
+          url
+          key
+        }
       }
       variation {
       id
       size
       color
       price
-      }
-      image{
-      id
-        url
-        key
-      }  
+      } 
     }
   }
 }

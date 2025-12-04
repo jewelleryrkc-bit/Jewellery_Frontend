@@ -700,6 +700,7 @@ export default function AddProduct() {
                         fill
                         className="object-cover"
                         onLoad={() => URL.revokeObjectURL(preview)}
+                          unoptimized
                       />
 
                       <button
@@ -717,6 +718,7 @@ export default function AddProduct() {
           </div>
 
           {/* Title Section */}
+
           <div className="space-y-2">
             <label className="block text-sm font-medium text-gray-700">
               Title
