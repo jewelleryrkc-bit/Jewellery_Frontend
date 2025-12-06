@@ -16,7 +16,7 @@ import {
 } from "../../../graphql/queries";
 import {
   ADD_TO_CART,
-  ADD_TO_WISHLIST,
+  TOGGLE_WISHLIST,
   CREATE_REVIEW,
 } from "../../../graphql/mutations";
 import Head from "next/head";
@@ -47,7 +47,8 @@ export default function ProductPage() {
   const [selectedImage, setSelectedImage] = useState(0);
   const { data: wishlistData } = useQuery(GET_WISHLISTS);
   const wishlistItems = wishlistData?.getWishlist?.items || [];
-  const [addtoWishlist] = useMutation(ADD_TO_WISHLIST);
+  const [toggleWishlist] = useMutation(TOGGLE_WISHLIST);
+
   const [showReportForm, setShowReportForm] = useState(false);
   const [expanded, setExpanded] = useState(false);
   const MAX_LENGTH = 200;
@@ -87,15 +88,15 @@ export default function ProductPage() {
 
   const wishlist = async (productId: string) => {
     try {
-      await addtoWishlist({
-        variables: {
-          productId,
-        },
-      });
-      toast.success("Added to wishlist");
+      const { data } = await toggleWishlist({ variables: { productId } });
+      if (data?.toggleWishlist === "added") {
+        toast.success("Added to wishlist");
+      } else if (data?.toggleWishlist === "removed") {
+        toast.success("Removed from wishlist");
+      }
     } catch (err) {
-      toast.error("Failed to add to wishlist");
-      console.log(err);
+      toast.error("Failed to update wishlist");
+      console.error(err);
     }
   };
 
@@ -243,8 +244,6 @@ export default function ProductPage() {
           { id: "3", src: "/images/productplaceholder/p3.jpg" },
           { id: "4", src: "/images/productplaceholder/p4.jpg" },
         ];
-
- 
 
   return (
     <>
@@ -528,26 +527,18 @@ export default function ProductPage() {
                       </svg>
                       Add to Cart
                     </button>
-
                     {/* Wishlist Button */}
                     <button
                       onClick={(e) => {
                         e.preventDefault();
-                        if (isInWishlist(product.id)) {
-                          toast.error(
-                            "This product is already in your wishlist"
-                          );
-                        } else {
-                          wishlist(product.id);
-                        }
+                        wishlist(product.id); // toggles add/remove in one call
                       }}
                       className={`flex items-center justify-center px-6 py-4 rounded-full transition-all duration-300 shadow-md font-medium w-full sm:w-auto
-                        ${
-                          isInWishlist(product.id)
-                            ? "bg-gray-400 text-white cursor-not-allowed"
-                            : "bg-amber-600 text-white hover:bg-amber-700 hover:shadow-lg"
-                        }`}
-                      disabled={isInWishlist(product.id)}
+    ${
+      isInWishlist(product.id)
+        ? "bg-red-500 text-white hover:bg-red-600 hover:shadow-lg"
+        : "bg-amber-600 text-white hover:bg-amber-700 hover:shadow-lg"
+    }`}
                     >
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
@@ -562,7 +553,7 @@ export default function ProductPage() {
                         />
                       </svg>
                       {isInWishlist(product.id)
-                        ? "In Wishlist"
+                        ? "Remove from Wishlist"
                         : "Save to Wishlist"}
                     </button>
                   </div>
@@ -573,7 +564,7 @@ export default function ProductPage() {
                     <div className="text-center">
                       <ArrowPathIcon className="h-6 w-6 text-gray-400 mx-auto" />
                       <p className="mt-2 text-xs text-gray-500">
-                        30-Day Returns
+                        7-Day Returns
                       </p>
                     </div>
                     <div className="text-center">
@@ -1179,18 +1170,20 @@ export default function ProductPage() {
                       <div className="aspect-square bg-gray-100 relative">
                         <div className="aspect-square bg-gray-50 relative overflow-hidden">
                           {similarProduct.images?.length > 0 ? (
-    <Image
-      src={similarProduct.images[0].url} // GraphQL image URL
-      alt={similarProduct.name}
-      fill
-      className="object-cover"
-      sizes="(max-width: 1024px) 100vw, 25vw"
-    />
-  ) : (
-    <div className="absolute inset-0 flex items-center justify-center bg-gray-50">
-      <span className="text-gray-300 text-sm">No Image</span>
-    </div>
-  )}
+                            <Image
+                              src={similarProduct.images[0].url} // GraphQL image URL
+                              alt={similarProduct.name}
+                              fill
+                              className="object-cover"
+                              sizes="(max-width: 1024px) 100vw, 25vw"
+                            />
+                          ) : (
+                            <div className="absolute inset-0 flex items-center justify-center bg-gray-50">
+                              <span className="text-gray-300 text-sm">
+                                No Image
+                              </span>
+                            </div>
+                          )}
                           {new Date(similarProduct.createdAt) >
                             new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) && (
                             <span className="absolute top-2 left-2 bg-white text-gray-600 text-xs font-light px-2 py-0.5">

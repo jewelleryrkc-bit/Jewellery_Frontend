@@ -425,24 +425,69 @@ export const LOGIN_ADMIN = gql `
   }
 `;
 
-export const ADD_TO_WISHLIST = gql `
-  mutation($productId: String!){
+export const ADD_TO_WISHLIST = gql`
+  mutation ($productId: String!) {
     addtoWishlist(productId: $productId) {
       id
+      price
       createdAt
+      updatedAt
       product {
         id
-          name
-          description
-          price
-          averageRating
-          size
-          slug
-          reviewCount
+        name
+        description
+        price
+        averageRating
+        size
+        slug
+        reviewCount
+        images {
+          id
+          url
+          key
+        }
+      }
+      variation {
+        id
+        size
+        color
+        price
       }
     }
   }
 `;
+
+
+export const TOGGLE_WISHLIST = gql`
+  mutation ToggleWishlist($productId: String!, $variationId: String) {
+    toggleWishlist(productId: $productId, variationId: $variationId) {
+      id
+      price
+      createdAt
+      updatedAt
+      product {
+        id
+        name
+        slug
+        price
+        averageRating
+        reviewCount
+        images {
+          id
+          url
+          key
+        }
+      }
+      variation {
+        id
+        size
+        color
+        price
+      }
+    }
+  }
+`;
+
 
 export const UPDATE_ORDER_STATUS = gql`
   mutation UpdateOrderStatus($orderId: String!, $status: OrderStatus!) {

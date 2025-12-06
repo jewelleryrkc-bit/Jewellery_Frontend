@@ -3,13 +3,13 @@
 
 import { useMutation, useQuery } from "@apollo/client";
 import { GET_TOP_RATED_PRODUCTS, GET_WISHLISTS } from "../../graphql/queries";
+import { TOGGLE_WISHLIST } from "../../graphql/mutations";
 import { useCurrency } from "../../providers/CurrencyContext";
 import { convertPrice } from "../../lib/currencyConverter";
 import { formatCurrency } from "../../lib/formatCurrency";
 import Link from "next/link";
 import { StarIcon } from "@heroicons/react/24/solid";
 import { HeartIcon } from "@heroicons/react/24/outline";
-import { ADD_TO_WISHLIST } from "../../graphql/mutations";
 import toast from "react-hot-toast";
 import useSWR from "swr";
 import Image from "next/image";
@@ -21,23 +21,26 @@ export default function TopRatedProducts() {
     variables: { limit: 4 },
   });
   const { currency } = useCurrency();
-  const [addtoWishlist] = useMutation(ADD_TO_WISHLIST);
+  const [toggleWishlist] = useMutation(TOGGLE_WISHLIST);
 
-  const isInWishlist = (productId: string) => {
-    return wishlistItems.some((item: any) => item.product.id === productId);
-  };
+  const isInWishlist = (productId: string, variationId?: string) =>
+    wishlistItems.some(
+      (item: any) =>
+        item.product.id === productId &&
+        (!variationId || item.variation?.id === variationId)
+    );
 
-  const wishlist = async (productId: string) => {
+  const wishlist = async (productId: string, variationId?: string) => {
     try {
-      await addtoWishlist({
-        variables: {
-          productId,
-        },
-      });
-      toast.success("Added to wishlist");
+      const res = await toggleWishlist({ variables: { productId, variationId } });
+      if (res.data.toggleWishlist === "added") {
+        toast.success("Added to wishlist");
+      } else if (res.data.toggleWishlist === "removed") {
+        toast.success("Removed from wishlist");
+      }
     } catch (err) {
-      toast.error("Failed to add to wishlist");
-      console.log(err);
+      toast.error("Failed to update wishlist");
+      console.error(err);
     }
   };
 
@@ -50,10 +53,7 @@ export default function TopRatedProducts() {
           </h2>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-5">
             {[...Array(4)].map((_, i) => (
-              <div
-                key={i}
-                className="bg-white rounded-none overflow-hidden animate-pulse"
-              >
+              <div key={i} className="bg-white rounded-none overflow-hidden animate-pulse">
                 <div className="aspect-square bg-gray-100"></div>
                 <div className="p-3 sm:p-4 space-y-2 sm:space-y-3">
                   <div className="h-4 bg-gray-100 rounded w-3/4"></div>
@@ -70,9 +70,7 @@ export default function TopRatedProducts() {
   if (error)
     return (
       <div className="max-w-7xl mx-auto px-4">
-        <p className="text-gray-500 font-light text-center">
-          Error loading products
-        </p>
+        <p className="text-gray-500 font-light text-center">Error loading products</p>
       </div>
     );
 
@@ -91,18 +89,18 @@ export default function TopRatedProducts() {
               <button
                 onClick={(e) => {
                   e.preventDefault();
-                  wishlist(product.id);
+                  wishlist(product.id, product?.variation?.id);
                 }}
                 className="absolute top-3 right-3 z-10 p-2 rounded-full bg-white/90 hover:bg-white transition-all shadow-sm"
                 aria-label={
-                  isInWishlist(product.id)
+                  isInWishlist(product.id, product?.variation?.id)
                     ? "Remove from wishlist"
                     : "Add to wishlist"
                 }
               >
                 <HeartIcon
                   className={`h-4 w-4 ${
-                    isInWishlist(product.id)
+                    isInWishlist(product.id, product?.variation?.id)
                       ? "text-red-500 fill-red-500 hover:text-red-600"
                       : "text-gray-400 hover:text-red-500"
                   } transition-colors`}
@@ -111,22 +109,17 @@ export default function TopRatedProducts() {
 
               <Link href={`/products/${product.slug}`} className="block">
                 <div className="aspect-square bg-gray-50 relative overflow-hidden">
-                  {/* Replace with actual Image component */}
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    {product.images && product.images.length > 0 ? (
-                      <Image
-                        src={product.images[0].url}
-                        alt={product.name}
-                        fill
-                        sizes="100%"
-                        className="object-cover"
-                      />
-                    ) : (
-                      <span className="text-gray-400 text-sm text-center px-2">
-                        {product.name}
-                      </span>
-                    )}
-                  </div>
+                  {product.images && product.images.length > 0 ? (
+                    <Image
+                      src={product.images[0].url}
+                      alt={product.name}
+                      fill
+                      sizes="100%"
+                      className="object-cover"
+                    />
+                  ) : (
+                    <span className="text-gray-400 text-sm text-center px-2">{product.name}</span>
+                  )}
                   {new Date(product.createdAt) >
                     new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) && (
                     <span className="absolute top-1.5 left-1.5 sm:top-2 sm:left-2 bg-white text-gray-600 text-2xs sm:text-xs font-light px-1.5 sm:px-2 py-0.5">
@@ -162,32 +155,18 @@ export default function TopRatedProducts() {
                 </div>
 
                 <div className="flex justify-between items-center">
-                  {/* <p className="text-xs sm:text-sm font-light text-gray-900">
-                    {formatCurrency(convertPrice(product.price, currency), currency)}
-                  </p> */}
                   <p className="text-sm sm:text-sm font-light text-gray-900 flex flex-col">
                     {product.discountedPrice ? (
                       <>
                         <span className="text-red-500">
-                          {formatCurrency(
-                            convertPrice(product.discountedPrice, currency),
-                            currency
-                          )}
+                          {formatCurrency(convertPrice(product.discountedPrice, currency), currency)}
                         </span>
                         <span className="text-xs sm:text-sm font-light text-gray-500 line-through">
-                          {formatCurrency(
-                            convertPrice(product.price, currency),
-                            currency
-                          )}
+                          {formatCurrency(convertPrice(product.price, currency), currency)}
                         </span>
                       </>
                     ) : (
-                      <span>
-                        {formatCurrency(
-                          convertPrice(product.price, currency),
-                          currency
-                        )}
-                      </span>
+                      <span>{formatCurrency(convertPrice(product.price, currency), currency)}</span>
                     )}
                   </p>
                   {product.material && (

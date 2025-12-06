@@ -3,6 +3,43 @@ export type ProductImageInput = {
   key: string;
 };
 
+export interface ProductImage {
+  id?: string;
+  url: string;
+  key: string;
+}
+
+export interface Product {
+  id: string;
+  slug: string;
+  name: string;
+  price: number;
+  size: string;
+  weight?: string;
+  description: string;
+  material?: string;
+  averageRating?: string;
+  reviewCount?: number;
+  images?: ProductImage[]; 
+}
+
+export interface Variation {
+  id: string;
+  price: number;
+  size: string;
+  color: string;
+}
+
+export interface WishlistItem {
+  id: string;
+  price: number;
+  createdAt?: string;
+  updatedAt?: string;
+  product: Product;
+  variation: Variation | null;
+}
+
+
 export interface Wishlist {
     variation: {
        id: string;
@@ -24,6 +61,7 @@ export interface Wishlist {
     }
   }
 
+  
   export enum ReportReason {
     COUNTERFEIT = 'COUNTERFEIT',
     INAPPROPRIATE = 'INAPPROPRIATE',

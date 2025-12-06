@@ -69,37 +69,43 @@ export const MY_ADDRESSES = gql`
   }
 `;
 
-export const GET_WISHLISTS = gql `
- query {
-  getWishlist {
-    id
-    createdAt
-    items {
-      product {
+export const GET_WISHLISTS = gql`
+  query {
+    getWishlist {
+      id
+      createdAt
+      updatedAt
+      items {
         id
-        name
-        description
-        size
         price
-        slug
-        averageRating
-        reviewCount
-        images {
-        id
-          url
-          key
+        createdAt
+        updatedAt
+        product {
+          id
+          name
+          description
+          size
+          price
+          slug
+          averageRating
+          reviewCount
+          images {
+            id
+            url
+            key
+          }
+        }
+        variation {
+          id
+          size
+          color
+          price
         }
       }
-      variation {
-      id
-      size
-      color
-      price
-      } 
     }
   }
-}
 `;
+
 
 export const GET_MY_ADDRESSES = gql`
   query MyAddresses {

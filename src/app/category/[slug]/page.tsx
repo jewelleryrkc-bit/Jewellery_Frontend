@@ -1,53 +1,66 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import { useQuery, useMutation } from "@apollo/client";
-import { CATEGORY_BY_SLUG, GET_WISHLISTS } from "../../../graphql/queries";
-import { ADD_TO_WISHLIST } from "../../../graphql/mutations";
+import { useQuery } from "@apollo/client";
+import { CATEGORY_BY_SLUG } from "../../../graphql/queries";
 import Link from "next/link";
 import Image from "next/image";
 import { HeartIcon, StarIcon } from "lucide-react";
 import { formatCurrency } from "../../../lib/formatCurrency";
 import { convertPrice } from "../../../lib/currencyConverter";
 import { useCurrency } from "../../../providers/CurrencyContext";
-import toast from "react-hot-toast";
 import LoadingPage from "@/components/LoadingPage";
+import { useWishlist } from "../../../hooks/useWishlist";
+import React from "react";
 
-export default function CategoryPage({ params }: { params: { slug: string } }) {
-  const { slug } = params;
-
-  const [addToWishlist] = useMutation(ADD_TO_WISHLIST);
-  const { data: wishlistData } = useQuery(GET_WISHLISTS);
-  const wishlistItems = wishlistData?.getWishlist?.items || [];
+export default function CategoryPage({ params }: { params: Promise<{ slug: string }> }) {
+  const unwrappedParams = React.use(params);
+  const { slug } = unwrappedParams;
   const { currency } = useCurrency();
+  const {toggleWishlist, isInWishlist } = useWishlist();
 
+  // Wishlist data
+  // const { data: wishlistData } = useQuery(GET_WISHLISTS);
+  // const wishlistItems = wishlistData?.getWishlist?.items || [];
+
+  // // Toggle wishlist mutation
+  // const [toggleWishlist] = useMutation(TOGGLE_WISHLIST, {
+  //   refetchQueries: [{ query: GET_WISHLISTS }],
+  // });
+
+  // const handleWishlistToggle = async (productId: string, variationId?: string) => {
+  //   try {
+  //     const { data } = await toggleWishlist({
+  //       variables: { productId, variationId: variationId || null },
+  //     });
+
+  //     if (data.toggleWishlist) {
+  //       toast.success("Added to wishlist");
+  //     } else {
+  //       toast.success("Removed from wishlist");
+  //     }
+  //   } catch (err) {
+  //     console.error(err);
+  //     toast.error("Failed to update wishlist");
+  //   }
+  // };
+
+  // Category data
   const {
     data: categoryData,
     loading: categoryLoading,
     error: categoryError,
   } = useQuery(CATEGORY_BY_SLUG, { variables: { slug } });
-
   const category = categoryData?.categoryBySlug;
 
-  const isInWishlist = (productId: string) =>
-    wishlistItems.some((item: any) => item.product.id === productId);
-
-  const wishlist = async (productId: string) => {
-    try {
-      await addToWishlist({ variables: { productId } });
-      toast.success("Added to wishlist");
-    } catch (err) {
-      toast.error("Failed to add to wishlist");
-      console.error(err);
-    }
-  };
+  // const isInWishlist = (productId: string) =>
+  //   wishlistItems.some((item: any) => item.product.id === productId);
 
   if (categoryLoading) return <LoadingPage />;
   if (categoryError) return <div>Error loading category</div>;
   if (!category) return <div>Category not found</div>;
 
   const products = category.products || [];
-  console.log("PRODUCTS WITH IMAGES:", products[0]);
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -109,10 +122,23 @@ export default function CategoryPage({ params }: { params: { slug: string } }) {
                 </div>
               </Link>
 
+              {/* Toggle wishlist */}
+              {/* <button
+                onClick={(e) => {
+                  e.preventDefault();
+                  handleWishlistToggle(product.id);
+                }}
+                className="absolute top-3 right-3 z-10 p-2 rounded-full bg-white/90 hover:bg-white transition-all shadow-sm"
+                aria-label={
+                  isInWishlist(product.id)
+                    ? "Remove from wishlist"
+                    : "Add to wishlist"
+                }
+              > */}
               <button
                 onClick={(e) => {
                   e.preventDefault();
-                  wishlist(product.id);
+                  toggleWishlist(product.id, product.name);
                 }}
                 className="absolute top-3 right-3 z-10 p-2 rounded-full bg-white/90 hover:bg-white transition-all shadow-sm"
                 aria-label={
@@ -146,7 +172,6 @@ export default function CategoryPage({ params }: { params: { slug: string } }) {
                         star <= Math.floor(product.averageRating || 0);
                       const isPartiallyFilled =
                         !isFilled && star - 1 < (product.averageRating || 0);
-
                       return (
                         <div key={star} className="relative">
                           <StarIcon className="h-2.5 w-2.5 sm:h-3 sm:w-3 text-gray-200" />
