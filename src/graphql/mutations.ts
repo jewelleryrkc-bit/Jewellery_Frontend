@@ -489,6 +489,13 @@ export const TOGGLE_WISHLIST = gql`
 `;
 
 
+
+export const REMOVE_WISHLIST_ITEM = gql`
+  mutation RemoveWishlistItem($itemId: String!) {
+    removeWishlistItem(itemId: $itemId)
+  }
+`;
+
 export const UPDATE_ORDER_STATUS = gql`
   mutation UpdateOrderStatus($orderId: String!, $status: OrderStatus!) {
     updateOrderStatus(orderId: $orderId, status: $status) {

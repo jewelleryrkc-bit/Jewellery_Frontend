@@ -39,6 +39,7 @@ import SEO from "@/components/SEO";
 import Image from "next/image";
 import { ProductImageInput } from "../../../types/type";
 
+
 export default function ProductPage() {
   const { currency } = useCurrency();
   const params = useParams();

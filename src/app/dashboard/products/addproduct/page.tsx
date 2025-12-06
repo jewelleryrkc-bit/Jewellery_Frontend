@@ -16,6 +16,7 @@ import Footer from "../../../../components/Footer";
 import Image from "next/image";
 import {ProductImageInput} from "../../../../types/type"
 
+
 type Variation = {
   size: string;
   color: string;
@@ -74,11 +75,6 @@ export type ProductVariationInput = {
   stock: number;
   images?: { url: string; key: string }[];
 };
-
-// export type ProductImageInput = {
-//   url: string;
-//   key: string;
-// };
 
 export type AddProductFormInputs = {
   // Required fields

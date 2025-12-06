@@ -61,6 +61,7 @@ export interface Wishlist {
       description: string;
       material: string;
       averageRating: string;
+      images?: ProductImage[];
     }
   }
 
