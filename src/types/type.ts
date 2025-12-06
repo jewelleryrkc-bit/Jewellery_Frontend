@@ -21,6 +21,7 @@ export interface Product {
   averageRating?: string;
   reviewCount?: number;
   images?: ProductImage[]; 
+  __typename?: string;
 }
 
 export interface Variation {
@@ -28,6 +29,7 @@ export interface Variation {
   price: number;
   size: string;
   color: string;
+  __typename?: string;
 }
 
 export interface WishlistItem {
@@ -37,6 +39,7 @@ export interface WishlistItem {
   updatedAt?: string;
   product: Product;
   variation: Variation | null;
+  __typename?: string;
 }
 
 

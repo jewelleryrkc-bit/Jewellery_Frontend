@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
+import { Toaster } from "react-hot-toast";
 import ApolloProviderWrapper from "../providers/ApolloProvider";
 import ClientSessionProvider from "../providers/ClientSessionProvider";
 import { CurrencyProvider } from "@/providers/CurrencyContext";
@@ -58,6 +59,7 @@ export default function RootLayout({
             </CurrencyProvider>
           </ApolloProviderWrapper>
         </ClientSessionProvider>
+        <Toaster position="top-center" />
       </body>
     </html>
   );

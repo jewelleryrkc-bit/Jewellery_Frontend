@@ -87,18 +87,20 @@ export default function ProductPage() {
   const companies = companyData?.getCompanies;
 
   const wishlist = async (productId: string) => {
-    try {
-      const { data } = await toggleWishlist({ variables: { productId } });
-      if (data?.toggleWishlist === "added") {
-        toast.success("Added to wishlist");
-      } else if (data?.toggleWishlist === "removed") {
-        toast.success("Removed from wishlist");
-      }
-    } catch (err) {
-      toast.error("Failed to update wishlist");
-      console.error(err);
+  try {
+    const { data } = await toggleWishlist({ variables: { productId } });
+
+    if (data?.toggleWishlist === "added") {
+      toast.success("Added to wishlist");
+    } else {
+      toast.success("Removed from wishlist");
     }
-  };
+
+  } catch (err) {
+    toast.error("Failed to update wishlist");
+  }
+};
+
 
   const [addToCart] = useMutation(ADD_TO_CART);
   const { data: getCategories } = useSWR(GET_PARENT_CATEGORIES);
@@ -316,26 +318,30 @@ export default function ProductPage() {
                     className="object-contain"
                     sizes="(max-width: 1024px) 100vw, 50vw"
                   />
-                  <button
-                    onClick={(e) => {
-                      e.preventDefault();
-                      wishlist(product.id);
-                    }}
-                    className="absolute top-3 right-3 z-10 p-2 rounded-full bg-white/90 hover:bg-white transition-all shadow-sm"
-                    aria-label={
-                      isInWishlist(product.id)
-                        ? "Remove from wishlist"
-                        : "Add to wishlist"
-                    }
-                  >
-                    <HeartIcon
-                      className={`h-4 w-4 ${
-                        isInWishlist(product.id)
-                          ? "text-red-500 fill-red-500 hover:text-red-600"
-                          : "text-gray-400 hover:text-red-500"
-                      } transition-colors`}
-                    />
-                  </button>
+                 <button
+  onClick={(e) => {
+    e.preventDefault();
+    wishlist(product.id); // toggles add/remove
+  }}
+  className={`flex items-center justify-center px-6 py-4 rounded-full transition-all duration-300 shadow-md font-medium w-full sm:w-auto
+  ${
+    isInWishlist(product.id)
+      ? "bg-red-500 text-white hover:bg-red-600 hover:shadow-lg"
+      : "bg-amber-600 text-white hover:bg-amber-700 hover:shadow-lg"
+  }`}
+>
+  <HeartIcon
+    className={`h-6 w-6 mr-2 ${
+      isInWishlist(product.id)
+        ? "text-white fill-white"
+        : "text-gray-100"
+    }`}
+  />
+  {isInWishlist(product.id)
+    ? "Remove from Wishlist"
+    : "Save to Wishlist"}
+</button>
+
                 </div>
                 <div className="grid grid-cols-4 gap-3">
                   {productImages.map((image, index) => (
@@ -1191,26 +1197,27 @@ export default function ProductPage() {
                             </span>
                           )}
                         </div>
-                        <button
-                          onClick={(e) => {
-                            e.preventDefault();
-                            wishlist(similarProduct.id);
-                          }}
-                          className="absolute top-3 right-3 z-10 p-2 rounded-full bg-white/90 hover:bg-white transition-all shadow-sm"
-                          aria-label={
-                            isInWishlist(similarProduct.id)
-                              ? "Remove from wishlist"
-                              : "Add to wishlist"
-                          }
-                        >
-                          <HeartIcon
-                            className={`h-4 w-4 ${
-                              isInWishlist(similarProduct.id)
-                                ? "text-red-500 fill-red-500 hover:text-red-600"
-                                : "text-gray-400 hover:text-red-500"
-                            } transition-colors`}
-                          />
-                        </button>
+                      <button
+  onClick={(e) => {
+    e.preventDefault();
+    wishlist(similarProduct.id);
+  }}
+  className="absolute top-3 right-3 z-10 p-2 rounded-full bg-white/90 hover:bg-white transition-all shadow-sm"
+  aria-label={
+    isInWishlist(similarProduct.id)
+      ? "Remove from wishlist"
+      : "Add to wishlist"
+  }
+>
+  <HeartIcon
+    className={`h-4 w-4 ${
+      isInWishlist(similarProduct.id)
+        ? "text-red-500 fill-red-500 hover:text-red-600"
+        : "text-gray-400 hover:text-red-500"
+    } transition-colors`}
+  />
+</button>
+
                       </div>
                       <div className="p-4">
                         <div className="flex justify-between items-start">

@@ -4,7 +4,7 @@ import { useQuery, useMutation, gql, ApolloCache } from "@apollo/client";
 import toast from "react-hot-toast";
 import { GET_WISHLISTS } from "../graphql/queries";
 import { TOGGLE_WISHLIST } from "../graphql/mutations";
-import { WishlistItem, Product, Variation } from "../types/type";
+import { WishlistItem, Product } from "../types/type";
 
 interface GetWishlistData {
   getWishlist: {
@@ -37,7 +37,7 @@ export const useWishlist = () => {
 
   const [toggleWishlistMutation] = useMutation(TOGGLE_WISHLIST);
 
-  const wishlistItems = data?.getWishlist.items || [];
+  const wishlistItems = data?.getWishlist?.items || [];
 
   const isInWishlist = (productId: string) =>
     wishlistItems.some((item) => item.product.id === productId);
@@ -46,7 +46,6 @@ export const useWishlist = () => {
     try {
       const alreadyInWishlist = isInWishlist(productId);
 
-      // Read product from Apollo cache
       const productFromCache = client.readFragment<Product>({
         id: `Product:${productId}`,
         fragment: PRODUCT_FRAGMENT,
@@ -57,7 +56,6 @@ export const useWishlist = () => {
         return;
       }
 
-      // Construct full WishlistItem for optimistic update
       const optimisticItem: WishlistItem = {
         __typename: "WishlistItem",
         id: `temp-${productId}`,
@@ -68,13 +66,14 @@ export const useWishlist = () => {
           ...productFromCache,
           __typename: "Product",
         },
-        variation: null, // replace if user selects a variation
+        variation: null,
       };
 
       await toggleWishlistMutation({
         variables: { productId },
 
         optimisticResponse: {
+          __typename: "Mutation",
           toggleWishlist: optimisticItem,
         },
 
@@ -87,12 +86,10 @@ export const useWishlist = () => {
           let updatedItems: WishlistItem[];
 
           if (alreadyInWishlist) {
-            // REMOVE ITEM
             updatedItems = existing.getWishlist.items.filter(
-              (item) => item.product.id !== productId
+              (i) => i.product.id !== productId
             );
           } else {
-            // ADD ITEM
             updatedItems = [...existing.getWishlist.items, optimisticItem];
           }
 
@@ -108,11 +105,20 @@ export const useWishlist = () => {
         },
       });
 
-      toast.success(
+      // NOW toast will work
+      //   toast.success(
+      //     alreadyInWishlist
+      //       ? `${productName} removed from wishlist`
+      //       : `${productName} added to wishlist`
+      //   );
+      //   console.log("check");
+      const result = toast.success(
         alreadyInWishlist
           ? `${productName} removed from wishlist`
           : `${productName} added to wishlist`
       );
+
+      console.log("Toast result:", result);
     } catch (err) {
       console.error(err);
       toast.error("Failed to update wishlist");

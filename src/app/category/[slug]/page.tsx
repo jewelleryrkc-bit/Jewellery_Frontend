@@ -19,32 +19,7 @@ export default function CategoryPage({ params }: { params: Promise<{ slug: strin
   const { currency } = useCurrency();
   const {toggleWishlist, isInWishlist } = useWishlist();
 
-  // Wishlist data
-  // const { data: wishlistData } = useQuery(GET_WISHLISTS);
-  // const wishlistItems = wishlistData?.getWishlist?.items || [];
-
-  // // Toggle wishlist mutation
-  // const [toggleWishlist] = useMutation(TOGGLE_WISHLIST, {
-  //   refetchQueries: [{ query: GET_WISHLISTS }],
-  // });
-
-  // const handleWishlistToggle = async (productId: string, variationId?: string) => {
-  //   try {
-  //     const { data } = await toggleWishlist({
-  //       variables: { productId, variationId: variationId || null },
-  //     });
-
-  //     if (data.toggleWishlist) {
-  //       toast.success("Added to wishlist");
-  //     } else {
-  //       toast.success("Removed from wishlist");
-  //     }
-  //   } catch (err) {
-  //     console.error(err);
-  //     toast.error("Failed to update wishlist");
-  //   }
-  // };
-
+ 
   // Category data
   const {
     data: categoryData,
@@ -52,9 +27,6 @@ export default function CategoryPage({ params }: { params: Promise<{ slug: strin
     error: categoryError,
   } = useQuery(CATEGORY_BY_SLUG, { variables: { slug } });
   const category = categoryData?.categoryBySlug;
-
-  // const isInWishlist = (productId: string) =>
-  //   wishlistItems.some((item: any) => item.product.id === productId);
 
   if (categoryLoading) return <LoadingPage />;
   if (categoryError) return <div>Error loading category</div>;
@@ -121,20 +93,6 @@ export default function CategoryPage({ params }: { params: Promise<{ slug: strin
                   )}
                 </div>
               </Link>
-
-              {/* Toggle wishlist */}
-              {/* <button
-                onClick={(e) => {
-                  e.preventDefault();
-                  handleWishlistToggle(product.id);
-                }}
-                className="absolute top-3 right-3 z-10 p-2 rounded-full bg-white/90 hover:bg-white transition-all shadow-sm"
-                aria-label={
-                  isInWishlist(product.id)
-                    ? "Remove from wishlist"
-                    : "Add to wishlist"
-                }
-              > */}
               <button
                 onClick={(e) => {
                   e.preventDefault();
