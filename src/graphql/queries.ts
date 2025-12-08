@@ -846,28 +846,6 @@ export const GET_CART_ITEMS_BY_USERS = gql `
 }
 `;
 
-// export const GET_CART = gql`
-//   query {
-//     getCart {
-//       id
-//       total
-//       items {
-//         id
-//         quantity
-//         price
-//         size
-//         product {
-//           name
-//         }
-//         variation {
-//           size
-//           price
-//         }
-//       }
-//     }
-//   }
-// `;
-
 export const GET_CART = gql`
   query GetCart {
     getCart {
