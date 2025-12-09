@@ -48,7 +48,10 @@ export default function ProductPage() {
   const [selectedImage, setSelectedImage] = useState(0);
   const { data: wishlistData } = useQuery(GET_WISHLISTS);
   const wishlistItems = wishlistData?.getWishlist?.items || [];
-  const [toggleWishlist] = useMutation(TOGGLE_WISHLIST);
+  const [toggleWishlist] = useMutation(TOGGLE_WISHLIST, {
+  refetchQueries: [{ query: GET_WISHLISTS }],
+  awaitRefetchQueries: true,
+});
 
   const [showReportForm, setShowReportForm] = useState(false);
   const [expanded, setExpanded] = useState(false);
@@ -319,30 +322,6 @@ export default function ProductPage() {
                     className="object-contain"
                     sizes="(max-width: 1024px) 100vw, 50vw"
                   />
-                 <button
-  onClick={(e) => {
-    e.preventDefault();
-    wishlist(product.id); // toggles add/remove
-  }}
-  className={`flex items-center justify-center px-6 py-4 rounded-full transition-all duration-300 shadow-md font-medium w-full sm:w-auto
-  ${
-    isInWishlist(product.id)
-      ? "bg-red-500 text-white hover:bg-red-600 hover:shadow-lg"
-      : "bg-amber-600 text-white hover:bg-amber-700 hover:shadow-lg"
-  }`}
->
-  <HeartIcon
-    className={`h-6 w-6 mr-2 ${
-      isInWishlist(product.id)
-        ? "text-white fill-white"
-        : "text-gray-100"
-    }`}
-  />
-  {isInWishlist(product.id)
-    ? "Remove from Wishlist"
-    : "Save to Wishlist"}
-</button>
-
                 </div>
                 <div className="grid grid-cols-4 gap-3">
                   {productImages.map((image, index) => (
@@ -542,7 +521,7 @@ export default function ProductPage() {
                       }}
                       className={`flex items-center justify-center px-6 py-4 rounded-full transition-all duration-300 shadow-md font-medium w-full sm:w-auto
     ${
-      isInWishlist(product.id)
+      isInWishlist(product?.id)
         ? "bg-red-500 text-white hover:bg-red-600 hover:shadow-lg"
         : "bg-amber-600 text-white hover:bg-amber-700 hover:shadow-lg"
     }`}
@@ -559,7 +538,7 @@ export default function ProductPage() {
                           clipRule="evenodd"
                         />
                       </svg>
-                      {isInWishlist(product.id)
+                      {isInWishlist(product?.id)
                         ? "Remove from Wishlist"
                         : "Save to Wishlist"}
                     </button>

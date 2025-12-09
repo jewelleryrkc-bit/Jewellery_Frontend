@@ -251,7 +251,11 @@ const subtotal = useMemo(() => {
                   {/* Product Image */}
                   <td className="px-6 py-4">
                     <Link
-                      href={`/products/${item.product.slug}/${item.product.id}`}
+                     href={{
+    pathname: `/products/${item.product.slug}`,
+    query: { id: item.product.id },
+  }}
+
                     >
                       {item.product.images?.length ? (
                         <Image
@@ -313,7 +317,7 @@ const subtotal = useMemo(() => {
                     onClick={handleAddToCart}
                     className="px-5 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition"
                   >
-                    Add Selected
+                    Add Selected to Cart
                   </button>
                 </td>
               </tr>
