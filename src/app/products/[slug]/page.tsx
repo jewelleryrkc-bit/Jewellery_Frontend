@@ -3,6 +3,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
+
 import { useQuery, useMutation } from "@apollo/client";
 import { useParams } from "next/navigation";
 import {
@@ -12,13 +13,8 @@ import {
   GET_SIMILAR_PRODUCTS,
   PRODUCT_REVIEWS_QUERY,
   GET_USER_RATING,
-  GET_WISHLISTS,
 } from "../../../graphql/queries";
-import {
-  ADD_TO_CART,
-  TOGGLE_WISHLIST,
-  CREATE_REVIEW,
-} from "../../../graphql/mutations";
+import { ADD_TO_CART, CREATE_REVIEW } from "../../../graphql/mutations";
 import Head from "next/head";
 import Link from "next/link";
 import { useCurrency } from "../../../providers/CurrencyContext";
@@ -26,9 +22,8 @@ import { convertPrice } from "../../../lib/currencyConverter";
 import { formatCurrency } from "../../../lib/formatCurrency";
 import { useState } from "react";
 import toast, { Toaster } from "react-hot-toast";
-import { StarIcon } from "@heroicons/react/24/solid";
+// import { StarIcon } from "@heroicons/react/24/solid";
 import {
-  HeartIcon,
   ArrowPathIcon,
   ShieldCheckIcon,
 } from "@heroicons/react/24/outline";
@@ -38,7 +33,8 @@ import useSWR from "swr";
 import SEO from "@/components/SEO";
 import Image from "next/image";
 import { ProductImageInput } from "../../../types/type";
-
+import { useWishlist } from "@/hooks/useWishlist";
+import { HeartIcon, StarIcon } from "lucide-react";
 
 export default function ProductPage() {
   const { currency } = useCurrency();
@@ -46,12 +42,7 @@ export default function ProductPage() {
   const [selectedVariation, setSelectedVariation] = useState<any>(null);
   const [quantity, setQuantity] = useState(1);
   const [selectedImage, setSelectedImage] = useState(0);
-  const { data: wishlistData } = useQuery(GET_WISHLISTS);
-  const wishlistItems = wishlistData?.getWishlist?.items || [];
-  const [toggleWishlist] = useMutation(TOGGLE_WISHLIST, {
-  refetchQueries: [{ query: GET_WISHLISTS }],
-  awaitRefetchQueries: true,
-});
+  const { toggleWishlist, isInWishlist } = useWishlist();
 
   const [showReportForm, setShowReportForm] = useState(false);
   const [expanded, setExpanded] = useState(false);
@@ -82,29 +73,8 @@ export default function ProductPage() {
     },
   });
 
-  const isInWishlist = (productId: string) => {
-    return wishlistItems.some((item: any) => item.product.id === productId);
-  };
-
   const { data: companyData } = useQuery(GET_COMPANIES);
-
   const companies = companyData?.getCompanies;
-
-  const wishlist = async (productId: string) => {
-  try {
-    const { data } = await toggleWishlist({ variables: { productId } });
-
-    if (data?.toggleWishlist === "added") {
-      toast.success("Added to wishlist");
-    } else {
-      toast.success("Removed from wishlist");
-    }
-
-  } catch (err) {
-    toast.error("Failed to update wishlist");
-  }
-};
-
 
   const [addToCart] = useMutation(ADD_TO_CART);
   const { data: getCategories } = useSWR(GET_PARENT_CATEGORIES);
@@ -112,13 +82,7 @@ export default function ProductPage() {
     refetchQueries: [{ query: GET_PRODUCT_BY_SLUG, variables: { slug } }],
   });
 
-  // const catslug = getCategories?.parentCategories;
   const categories = getCategories?.parentCategories || [];
-  // Find the category that matches the product's category
-  const productCategory = categories.find(
-    (cat: { id: any }) => cat.id === product?.category?.id
-  );
-
   const [reviewInput, setReviewInput] = useState({
     rating: 5,
     comment: "",
@@ -126,6 +90,10 @@ export default function ProductPage() {
   });
 
   const product = data?.productBySlug;
+  const productCategory = categories.find(
+    (cat: { id: any }) => cat.id === product?.category?.id
+  );
+
   const categorySlug =
     productCategory?.slug ||
     product?.category?.name?.toLowerCase().replace(/\s+/g, "-");
@@ -240,7 +208,7 @@ export default function ProductPage() {
 
   const productImages: { id: string; src: string }[] =
     product.images?.length > 0
-      ? product.images.map((image: ProductImageInput, index: number) => ({
+      ? product.images.map((image: ProductImageInput) => ({
           id: image.key,
           src: image.url,
         }))
@@ -252,7 +220,7 @@ export default function ProductPage() {
         ];
 
   return (
-    <>
+   <>
       <SEO
         product={{
           id: product.id,
@@ -309,7 +277,7 @@ export default function ProductPage() {
         </nav>
 
         {/* Product Section */}
-        <section className="container mx-auto px-4 py-8">
+         <section className="container mx-auto px-4 py-8">
           <div className="bg-white rounded-xl shadow-sm overflow-hidden">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 p-6">
               {/* Product Images */}
@@ -318,7 +286,7 @@ export default function ProductPage() {
                   <Image
                     src={productImages[selectedImage].src}
                     alt={product.name}
-                    fill // covers the parent div
+                    fill
                     className="object-contain"
                     sizes="(max-width: 1024px) 100vw, 50vw"
                   />
@@ -499,49 +467,49 @@ export default function ProductPage() {
                   {/* Improved Action Buttons for Mobile */}
                   <div className="mt-8 flex flex-col sm:flex-row gap-4">
                     {/* Add to Cart Button */}
-                    <button
-                      onClick={handleAddToCart}
-                      className="flex items-center justify-center bg-rose-500 text-white px-6 py-4 rounded-full hover:bg-rose-600 transition-all duration-300 shadow-md hover:shadow-lg font-medium w-full sm:w-auto"
+                      <button
+                    onClick={handleAddToCart}
+                    className="flex items-center justify-center bg-rose-500 text-white px-6 py-4 rounded-full hover:bg-rose-600 transition-all duration-300 shadow-md hover:shadow-lg font-medium w-full sm:w-auto"
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="h-6 w-6 mr-2"
+                      viewBox="0 0 20 20"
+                      fill="currentColor"
                     >
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        className="h-6 w-6 mr-2"
-                        viewBox="0 0 20 20"
-                        fill="currentColor"
-                      >
-                        <path d="M3 1a1 1 0 000 2h1.22l.305 1.222a.997.997 0 00.01.042l1.358 5.43-.893.892C3.74 11.846 4.632 14 6.414 14H15a1 1 0 000-2H6.414l1-1H14a1 1 0 00.894-.553l3-6A1 1 0 0017 3H6.28l-.31-1.243A1 1 0 005 1H3zM16 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zM6.5 18a1.5 1.5 0 100-3 1.5 1.5 0 000 3z" />
-                      </svg>
-                      Add to Cart
-                    </button>
+                      <path d="M3 1a1 1 0 000 2h1.22l.305 1.222a.997.997 0 00.01.042l1.358 5.43-.893.892C3.74 11.846 4.632 14 6.414 14H15a1 1 0 000-2H6.414l1-1H14a1 1 0 00.894-.553l3-6A1 1 0 0017 3H6.28l-.31-1.243A1 1 0 005 1H3zM16 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zM6.5 18a1.5 1.5 0 100-3 1.5 1.5 0 000 3z" />
+                    </svg>
+                    Add to Cart
+                  </button>
                     {/* Wishlist Button */}
-                    <button
-                      onClick={(e) => {
-                        e.preventDefault();
-                        wishlist(product.id); // toggles add/remove in one call
-                      }}
-                      className={`flex items-center justify-center px-6 py-4 rounded-full transition-all duration-300 shadow-md font-medium w-full sm:w-auto
-    ${
-      isInWishlist(product?.id)
-        ? "bg-red-500 text-white hover:bg-red-600 hover:shadow-lg"
-        : "bg-amber-600 text-white hover:bg-amber-700 hover:shadow-lg"
-    }`}
+                       <button
+                    onClick={(e) => {
+                      e.preventDefault();
+                      toggleWishlist(product.id, product.name);
+                    }}
+                    className={`flex items-center justify-center px-6 py-4 rounded-full transition-all duration-300 shadow-md font-medium w-full sm:w-auto
+                      ${
+                        isInWishlist(product?.id)
+                          ? "bg-red-500 text-white hover:bg-red-600 hover:shadow-lg"
+                          : "bg-amber-600 text-white hover:bg-amber-700 hover:shadow-lg"
+                      }`}
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="h-6 w-6 mr-2"
+                      viewBox="0 0 20 20"
+                      fill="currentColor"
                     >
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        className="h-6 w-6 mr-2"
-                        viewBox="0 0 20 20"
-                        fill="currentColor"
-                      >
-                        <path
-                          fillRule="evenodd"
-                          d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z"
-                          clipRule="evenodd"
-                        />
-                      </svg>
-                      {isInWishlist(product?.id)
-                        ? "Remove from Wishlist"
-                        : "Save to Wishlist"}
-                    </button>
+                      <path
+                        fillRule="evenodd"
+                        d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z"
+                        clipRule="evenodd"
+                      />
+                    </svg>
+                    {isInWishlist(product?.id)
+                      ? "Remove from Wishlist"
+                      : "Save to Wishlist"}
+                  </button>
                   </div>
                 </div>
 
@@ -1177,10 +1145,10 @@ export default function ProductPage() {
                             </span>
                           )}
                         </div>
-                      <button
+<button
   onClick={(e) => {
     e.preventDefault();
-    wishlist(similarProduct.id);
+    toggleWishlist(similarProduct.id, similarProduct.name); 
   }}
   className="absolute top-3 right-3 z-10 p-2 rounded-full bg-white/90 hover:bg-white transition-all shadow-sm"
   aria-label={
@@ -1197,6 +1165,7 @@ export default function ProductPage() {
     } transition-colors`}
   />
 </button>
+
 
                       </div>
                       <div className="p-4">
