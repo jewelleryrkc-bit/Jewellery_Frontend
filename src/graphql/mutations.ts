@@ -446,6 +446,10 @@ export const ADD_TO_WISHLIST = gql`
           url
           key
         }
+        category {      
+          id
+          name
+        }
       }
       variation {
         id
@@ -476,6 +480,10 @@ export const TOGGLE_WISHLIST = gql`
           id
           url
           key
+        }
+          category {       
+          id
+          name
         }
       }
       variation {

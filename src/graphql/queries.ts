@@ -94,6 +94,10 @@ export const GET_WISHLISTS = gql`
             url
             key
           }
+            category {
+          id
+          name
+        }
         }
         variation {
           id
