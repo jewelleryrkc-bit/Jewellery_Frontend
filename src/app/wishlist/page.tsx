@@ -191,131 +191,125 @@ const subtotal = useMemo(() => {
       ) : (
         <div className="overflow-x-auto shadow-lg rounded-lg border">
           <table className="min-w-full divide-y divide-gray-200 bg-white">
-            <thead className="bg-gray-100">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                  <div className="flex items-center gap-2">
-                   <span>SELECT</span>
-                  <input
-                    type="checkbox"
-                    checked={allSelected}
-                    onChange={toggleSelectAll}
-                    className="h-4 w-4 cursor-pointer"
-                  />
-                  </div>
-                </th>
+         <thead className="bg-gray-100">
+  <tr>
+    <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+      <div className="flex items-center gap-2">
+        <span>SELECT</span>
+        <input
+          type="checkbox"
+          checked={allSelected}
+          onChange={toggleSelectAll}
+          className="h-4 w-4 cursor-pointer"
+        />
+      </div>
+    </th>
+    <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+      #
+    </th>
+    <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+      Product
+    </th>
+    <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+      Name
+    </th>
+    <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+      Price
+    </th>
+    <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+      Action
+    </th>
+  </tr>
+</thead>
 
-                <th className="px-6 py-3 text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                  #
-                </th>
+           <tbody className="divide-y divide-gray-200">
+  {wishproducts.map((item: WishItem, index: number) => (
+    <tr
+      key={item.id}
+      className="hover:bg-gray-50 transition-colors"
+    >
+      {/* SELECT */}
+      <td className="px-6 py-4">
+        <input
+          type="checkbox"
+          checked={selectedItems.includes(item.id)}
+          onChange={() => toggleSelectItem(item.id)}
+          className="h-4 w-4 cursor-pointer"
+        />
+      </td>
 
-                <th className="px-6 py-3 text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                  Product
-                </th>
+      {/* # */}
+      <td className="px-6 py-4 text-sm text-gray-500 font-medium">
+        {index + 1}
+      </td>
 
-                <th className="px-6 py-3 text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                  Name
-                </th>
+      {/* PRODUCT IMAGE */}
+      <td className="px-6 py-4">
+        <Link
+          href={{
+            pathname: `/products/${item.product.slug}`,
+            query: { id: item.product.id },
+          }}
+        >
+          {item.product.images?.length ? (
+            <Image
+              src={item.product.images[0].url}
+              alt={item.product.name}
+              width={50}
+              height={50}
+              className="rounded-md object-cover border shadow-sm hover:scale-105 transition-transform"
+            />
+          ) : (
+            <div className="h-12 w-12 bg-gray-100 border rounded-md flex items-center justify-center text-gray-400 text-xs">
+              No Img
+            </div>
+          )}
+        </Link>
+      </td>
 
-                <th className="px-6 py-3 text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                  Price
-                </th>
+      {/* NAME */}
+      <td className="px-6 py-4">
+        <Link href={`/products/${item.product.slug}`}>
+          <span className="text-sm font-medium text-gray-800 hover:text-indigo-600 transition-colors cursor-pointer">
+            {item.product.name}
+          </span>
+        </Link>
+      </td>
 
-                <th className="px-6 py-3 text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                  Action
-                </th>
-              </tr>
-            </thead>
+      {/* PRICE */}
+      <td className="px-6 py-4 text-sm text-gray-800 font-semibold">
+        {formatCurrency(
+          convertPrice(item.product.price, currency),
+          currency
+        )}
+      </td>
 
-            <tbody className="divide-y divide-gray-200">
-              {wishproducts.map((item: WishItem, index: number) => (
-                <tr
-                  key={item.id}
-                  className="hover:bg-gray-50 transition-colors"
-                >
-                  {/* Checkbox */}
-                  <td className="px-6 py-4">
-                    <input
-                      type="checkbox"
-                      checked={selectedItems.includes(item.id)}
-                      onChange={() => toggleSelectItem(item.id)}
-                      className="h-4 w-4 cursor-pointer"
-                    />
-                  </td>
-
-                  {/* Index */}
-                  <td className="px-6 py-4 text-gray-500 font-medium">
-                    {index + 1}
-                  </td>
-
-                  {/* Product Image */}
-                  <td className="px-6 py-4">
-                    <Link
-                     href={{
-    pathname: `/products/${item.product.slug}`,
-    query: { id: item.product.id },
-  }}
-
-                    >
-                      {item.product.images?.length ? (
-                        <Image
-                          src={item.product.images[0].url}
-                          alt={item.product.name}
-                          width={50}
-                          height={50}
-                          className="rounded-md object-cover border shadow-sm hover:scale-105 transition-transform"
-                        />
-                      ) : (
-                        <div className="h-12 w-12 bg-gray-100 border rounded-md flex items-center justify-center text-gray-400 text-xs">
-                          No Img
-                        </div>
-                      )}
-                    </Link>
-                  </td>
-
-                  {/* Name */}
-                  <td className="px-6 py-4">
-                    <Link href={`/products/${item.product.slug}`}>
-                      <span className="text-sm font-medium text-gray-800 hover:text-indigo-600 transition-colors cursor-pointer">
-                        {item.product.name}
-                      </span>
-                    </Link>
-                  </td>
-
-                  {/* Price */}
-                  <td className="px-6 py-4 text-gray-700 font-semibold">
-                    {formatCurrency(
-                      convertPrice(item.product.price, currency),
-                      currency
-                    )}
-                  </td>
-
-                  {/* Actions */}
-                  <td className="px-6 py-4">
-                    <button
-                      onClick={() => handleRemove(item.id)}
-                      className="text-red-600 hover:text-red-800 font-medium"
-                    >
-                      Remove
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
+      {/* ACTION */}
+      <td className="px-6 py-4">
+        <button
+          onClick={() => handleRemove(item.id)}
+          className="text-sm font-medium text-red-600 hover:text-red-800"
+        >
+          Remove
+        </button>
+      </td>
+    </tr>
+  ))}
+</tbody>
 
             <tfoot className="bg-gray-50">
               <tr>
-                <td colSpan={4}></td>
+                <td className="px-6 py-4" colSpan={4}></td>
 
-                <td className="px-6 py-4 text-right font-bold text-gray-800">
+                <td className="px-6 py-4 text-right font-bold text-gray-800 ">
                   Subtotal:{" "}
                   {formatCurrency(convertPrice(subtotal, currency), currency)}
                 </td>
 
-                <td className="px-6 py-4">
+                <td className="px-6 py-4 text-align-right">
                   <button
                     onClick={handleAddToCart}
-                    className="px-5 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition"
+                    className="px-5 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition text-sm font-medium"
                   >
                     Add Selected to Cart
                   </button>
