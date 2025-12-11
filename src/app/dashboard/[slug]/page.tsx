@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
@@ -7,6 +8,7 @@ import { useQuery } from "@apollo/client";
 import { useParams, useRouter } from "next/navigation";
 import { StarIcon, ArrowLeftIcon } from "@heroicons/react/24/outline";
 import { StarIcon as StarIconSolid } from "@heroicons/react/24/solid";
+import { UPDATE_PRODUCT_IMAGE } from "../../../graphql/mutations";
 import TopHeader from "@/components/TopHeader";
 import SearchBar from "@/components/SearchBar";
 import Footer from "@/components/Footer";
@@ -17,6 +19,7 @@ enum ReviewSentiment {
   NEUTRAL = 'NEUTRAL',
   NEGATIVE = 'NEGATIVE'
 }
+
 
 export default function SellerProductPage() {
   const router = useRouter();

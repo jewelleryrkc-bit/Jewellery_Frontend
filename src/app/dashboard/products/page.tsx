@@ -28,6 +28,7 @@ export default function SellerProducts() {
     const [statusFilter, setStatusFilter] = useState("all");
     const [priceRange, setPriceRange] = useState({ min: "", max: "" });
     const [stockFilter, setStockFilter] = useState("all");
+    const [imgError, setImgError] = useState(false);
 
     const sidebarItems = [
         "Edit store",
@@ -387,23 +388,29 @@ export default function SellerProducts() {
                                                 </td>
                                                 <td className="p-3 md:p-4 hidden sm:table-cell">{offset + idx + 1}</td>
                                                 <td className="p-3 md:p-4">
-                                                    <div className="w-12 h-12 md:w-16 md:h-16 bg-gray-100 flex items-center justify-center rounded-md overflow-hidden relative">
-                                                        {product.images && product.images.length > 0 ? (
-                                                            <img 
-                                                                src={product.images[0].url} 
-                                                                alt={product.name}
-                                                                className="w-full h-full object-cover"
-                                                            />
-                                                        ) : (
-                                                            <span className="text-xs text-gray-400">No Image</span>
-                                                        )}
-                                                        {lowStock && (
-                                                            <div className="absolute -top-1 -right-1 bg-yellow-500 rounded-full p-0.5">
-                                                                <AlertTriangle className="h-3 w-3 text-white" />
-                                                            </div>
-                                                        )}
-                                                    </div>
-                                                </td>
+  <div className="w-12 h-12 md:w-16 md:h-16 bg-gray-100 flex items-center justify-center rounded-md overflow-hidden relative">
+    {product.images && product.images.length > 0 && !imgError ? (
+      <img
+        src={product.images[0].url}
+        alt={product.name}
+        className="w-full h-full object-cover"
+        onError={() => setImgError(true)}
+      />
+    ) : product.images && product.images.length > 0 && imgError ? (
+      <span className="text-[10px] text-gray-500 text-center px-1 line-clamp-2">
+        {product.name}
+      </span>
+    ) : (
+      <span className="text-xs text-gray-400">No Image</span>
+    )}
+
+    {lowStock && (
+      <div className="absolute -top-1 -right-1 bg-yellow-500 rounded-full p-0.5">
+        <AlertTriangle className="h-3 w-3 text-white" />
+      </div>
+    )}
+  </div>
+</td>
                                                 <td className="p-3 md:p-4 font-medium max-w-[120px] md:max-w-none truncate">
                                                     <a href={`/dashboard/${product.slug}`} className="hover:text-blue-600 transition-colors flex items-center gap-1">
                                                         {product.name}

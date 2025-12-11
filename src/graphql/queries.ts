@@ -439,7 +439,8 @@ export const GET_PRODUCT_BY_SLUG = gql`
       company {
       id
       cname
-      }  
+      } 
+       
     }
   }
 `;
@@ -801,6 +802,11 @@ export const SELLER_PRODUCT_PAGINATION = gql`
       category {
         id
         name
+      }
+      images {
+        id
+        key
+        url
       }
     }
     total

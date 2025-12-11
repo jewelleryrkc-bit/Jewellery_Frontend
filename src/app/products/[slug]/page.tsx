@@ -23,10 +23,7 @@ import { formatCurrency } from "../../../lib/formatCurrency";
 import { useState } from "react";
 import toast, { Toaster } from "react-hot-toast";
 // import { StarIcon } from "@heroicons/react/24/solid";
-import {
-  ArrowPathIcon,
-  ShieldCheckIcon,
-} from "@heroicons/react/24/outline";
+import { ArrowPathIcon, ShieldCheckIcon } from "@heroicons/react/24/outline";
 import LoadingPage from "@/components/LoadingPage";
 import ReportProductForm from "../../reports/ReportProducrForm/page";
 import useSWR from "swr";
@@ -150,6 +147,13 @@ export default function ProductPage() {
 
   const handleAddToCart = async () => {
     try {
+      console.log("selectedVariation at addToCart:", selectedVariation);
+
+      if (product.variations?.length > 0 && !selectedVariation) {
+        toast.error("Please select an option before adding to cart");
+        return;
+      }
+
       toast.dismiss();
       await addToCart({
         variables: {
@@ -220,7 +224,7 @@ export default function ProductPage() {
         ];
 
   return (
-   <>
+    <>
       <SEO
         product={{
           id: product.id,
@@ -277,7 +281,7 @@ export default function ProductPage() {
         </nav>
 
         {/* Product Section */}
-         <section className="container mx-auto px-4 py-8">
+        <section className="container mx-auto px-4 py-8">
           <div className="bg-white rounded-xl shadow-sm overflow-hidden">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 p-6">
               {/* Product Images */}
@@ -391,52 +395,57 @@ export default function ProductPage() {
                       Options
                     </h3>
                     <div className="mt-4 space-y-4">
-                      {product.variations.map((variation: any) => (
-                        <div
-                          key={variation.id}
-                          onClick={() => {
-                            if (selectedVariation?.id === variation.id) {
-                              setSelectedVariation(null);
-                            } else {
-                              setSelectedVariation(variation);
-                            }
-                          }}
-                          className={`p-4 border rounded-lg cursor-pointer transition-colors ${
-                            selectedVariation?.id === variation.id
-                              ? "border-blue-500 bg-blue-50"
-                              : "border-gray-200 hover:border-gray-300"
-                          }`}
-                        >
-                          <div className="flex justify-between">
-                            <div>
-                              <p className="font-medium">
-                                {variation.color} {variation.size}
-                              </p>
-                              <p className="text-sm text-gray-500 mt-1">
-                                {formatCurrency(
-                                  convertPrice(variation.price, currency),
-                                  currency
-                                )}
-                              </p>
-                            </div>
-                            {selectedVariation?.id === variation.id && (
-                              <div className="h-5 w-5 rounded-full bg-blue-500 flex items-center justify-center">
-                                <svg
-                                  className="h-3 w-3 text-white"
-                                  fill="currentColor"
-                                  viewBox="0 0 20 20"
-                                >
-                                  <path
-                                    fillRule="evenodd"
-                                    d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                                    clipRule="evenodd"
-                                  />
-                                </svg>
+                      {product.variations.map((variation: any) => {
+                        const isSelected =
+                          selectedVariation?.id === variation.id;
+                        return (
+                          <button
+                            key={variation.id}
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              console.log("Clicked variation:", variation);
+                              setSelectedVariation(
+                                isSelected ? null : variation
+                              );
+                            }}
+                            className={`w-full text-left p-4 border rounded-lg cursor-pointer transition-colors ${
+                              isSelected
+                                ? "border-blue-500 bg-blue-50"
+                                : "border-gray-200 hover:border-gray-300"
+                            }`}
+                          >
+                            <div className="flex justify-between">
+                              <div>
+                                <p className="font-medium">
+                                  {variation.color} {variation.size}
+                                </p>
+                                <p className="text-sm text-gray-500 mt-1">
+                                  {formatCurrency(
+                                    convertPrice(variation.price, currency),
+                                    currency
+                                  )}
+                                </p>
                               </div>
-                            )}
-                          </div>
-                        </div>
-                      ))}
+                              {isSelected && (
+                                <div className="h-5 w-5 rounded-full bg-blue-500 flex items-center justify-center">
+                                  <svg
+                                    className="h-3 w-3 text-white"
+                                    fill="currentColor"
+                                    viewBox="0 0 20 20"
+                                  >
+                                    <path
+                                      fillRule="evenodd"
+                                      d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                                      clipRule="evenodd"
+                                    />
+                                  </svg>
+                                </div>
+                              )}
+                            </div>
+                          </button>
+                        );
+                      })}
                     </div>
                   </div>
                 )}
@@ -467,49 +476,49 @@ export default function ProductPage() {
                   {/* Improved Action Buttons for Mobile */}
                   <div className="mt-8 flex flex-col sm:flex-row gap-4">
                     {/* Add to Cart Button */}
-                      <button
-                    onClick={handleAddToCart}
-                    className="flex items-center justify-center bg-rose-500 text-white px-6 py-4 rounded-full hover:bg-rose-600 transition-all duration-300 shadow-md hover:shadow-lg font-medium w-full sm:w-auto"
-                  >
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      className="h-6 w-6 mr-2"
-                      viewBox="0 0 20 20"
-                      fill="currentColor"
+                    <button
+                      onClick={handleAddToCart}
+                      className="flex items-center justify-center bg-rose-500 text-white px-6 py-4 rounded-full hover:bg-rose-600 transition-all duration-300 shadow-md hover:shadow-lg font-medium w-full sm:w-auto"
                     >
-                      <path d="M3 1a1 1 0 000 2h1.22l.305 1.222a.997.997 0 00.01.042l1.358 5.43-.893.892C3.74 11.846 4.632 14 6.414 14H15a1 1 0 000-2H6.414l1-1H14a1 1 0 00.894-.553l3-6A1 1 0 0017 3H6.28l-.31-1.243A1 1 0 005 1H3zM16 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zM6.5 18a1.5 1.5 0 100-3 1.5 1.5 0 000 3z" />
-                    </svg>
-                    Add to Cart
-                  </button>
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="h-6 w-6 mr-2"
+                        viewBox="0 0 20 20"
+                        fill="currentColor"
+                      >
+                        <path d="M3 1a1 1 0 000 2h1.22l.305 1.222a.997.997 0 00.01.042l1.358 5.43-.893.892C3.74 11.846 4.632 14 6.414 14H15a1 1 0 000-2H6.414l1-1H14a1 1 0 00.894-.553l3-6A1 1 0 0017 3H6.28l-.31-1.243A1 1 0 005 1H3zM16 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zM6.5 18a1.5 1.5 0 100-3 1.5 1.5 0 000 3z" />
+                      </svg>
+                      Add to Cart
+                    </button>
                     {/* Wishlist Button */}
-                       <button
-                    onClick={(e) => {
-                      e.preventDefault();
-                      toggleWishlist(product.id, product.name);
-                    }}
-                    className={`flex items-center justify-center px-6 py-4 rounded-full transition-all duration-300 shadow-md font-medium w-full sm:w-auto
+                    <button
+                      onClick={(e) => {
+                        e.preventDefault();
+                        toggleWishlist(product.id, product.name);
+                      }}
+                      className={`flex items-center justify-center px-6 py-4 rounded-full transition-all duration-300 shadow-md font-medium w-full sm:w-auto
                       ${
                         isInWishlist(product?.id)
                           ? "bg-red-500 text-white hover:bg-red-600 hover:shadow-lg"
                           : "bg-amber-600 text-white hover:bg-amber-700 hover:shadow-lg"
                       }`}
-                  >
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      className="h-6 w-6 mr-2"
-                      viewBox="0 0 20 20"
-                      fill="currentColor"
                     >
-                      <path
-                        fillRule="evenodd"
-                        d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z"
-                        clipRule="evenodd"
-                      />
-                    </svg>
-                    {isInWishlist(product?.id)
-                      ? "Remove from Wishlist"
-                      : "Save to Wishlist"}
-                  </button>
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="h-6 w-6 mr-2"
+                        viewBox="0 0 20 20"
+                        fill="currentColor"
+                      >
+                        <path
+                          fillRule="evenodd"
+                          d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z"
+                          clipRule="evenodd"
+                        />
+                      </svg>
+                      {isInWishlist(product?.id)
+                        ? "Remove from Wishlist"
+                        : "Save to Wishlist"}
+                    </button>
                   </div>
                 </div>
 
@@ -1145,28 +1154,29 @@ export default function ProductPage() {
                             </span>
                           )}
                         </div>
-<button
-  onClick={(e) => {
-    e.preventDefault();
-    toggleWishlist(similarProduct.id, similarProduct.name); 
-  }}
-  className="absolute top-3 right-3 z-10 p-2 rounded-full bg-white/90 hover:bg-white transition-all shadow-sm"
-  aria-label={
-    isInWishlist(similarProduct.id)
-      ? "Remove from wishlist"
-      : "Add to wishlist"
-  }
->
-  <HeartIcon
-    className={`h-4 w-4 ${
-      isInWishlist(similarProduct.id)
-        ? "text-red-500 fill-red-500 hover:text-red-600"
-        : "text-gray-400 hover:text-red-500"
-    } transition-colors`}
-  />
-</button>
-
-
+                        <button
+                          onClick={(e) => {
+                            e.preventDefault();
+                            toggleWishlist(
+                              similarProduct.id,
+                              similarProduct.name
+                            );
+                          }}
+                          className="absolute top-3 right-3 z-10 p-2 rounded-full bg-white/90 hover:bg-white transition-all shadow-sm"
+                          aria-label={
+                            isInWishlist(similarProduct.id)
+                              ? "Remove from wishlist"
+                              : "Add to wishlist"
+                          }
+                        >
+                          <HeartIcon
+                            className={`h-4 w-4 ${
+                              isInWishlist(similarProduct.id)
+                                ? "text-red-500 fill-red-500 hover:text-red-600"
+                                : "text-gray-400 hover:text-red-500"
+                            } transition-colors`}
+                          />
+                        </button>
                       </div>
                       <div className="p-4">
                         <div className="flex justify-between items-start">

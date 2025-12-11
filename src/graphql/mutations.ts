@@ -662,46 +662,6 @@ export const ADD_TO_CART = gql`
   }
 `;
 
-// export const ADD_TO_CART = gql`
-//   mutation AddToCart($productId: String!, $variationId: String, $quantity: Float!) {
-//     addToCart(productId: $productId, variationId: $variationId, quantity: $quantity) {
-//       id
-//       quantity
-//       product {
-//         id
-//         name
-//         slug
-//         price
-//       }
-//       variation {
-//         id
-//         size
-//         color
-//         price
-//       }
-//     }
-//   }
-// `;
-
-// export const ADD_TO_CART = gql`
-//   mutation AddToCart($productId: ID!, $variationId: ID, $quantity: Float!) {
-//     addToCart(productId: $productId, variationId: $variationId, quantity: $quantity) {
-//       id
-//       product {
-//         id
-//         name
-//       }
-//       variation {
-//         id
-//         size
-//         color
-//         price
-//       }
-//       quantity
-//     }
-//   }
-// `;
-
 export const UPDATE_ADDRESS = gql`
  mutation($input: UpdateUserAddressInput!, $updateUserAddressId: String!) {
   updateUserAddress(input: $input, id: $updateUserAddressId) {
@@ -718,6 +678,29 @@ export const UPDATE_ADDRESS = gql`
   }
 }
 `;
+
+export const UPDATE_PRODUCT_IMAGE = gql`
+  mutation UpdateProductImage($imageId: String!, $newUrl: String!) {
+    updateProductImage(imageId: $imageId, newUrl: $newUrl) {
+      id
+      url
+      key
+    }
+  }
+`;
+
+export const DELETE_PRODUCT_IMAGE = gql`
+  mutation DeleteProductImage($productId: String!, $imageKey: String!) {
+    deleteProductImage(productId: $productId, imageKey: $imageKey)
+  }
+`;
+
+export const ADD_PRODUCT_IMAGES = gql`
+  mutation AddProductImages($productId: String!, $imageUrls: [String!]!) {
+    addProductImages(productId: $productId, variationId: null, imageUrls: $imageUrls)
+  }
+`;
+
 
 export const CREATE_REVIEW = gql `
  mutation($input: ReviewInput!) {

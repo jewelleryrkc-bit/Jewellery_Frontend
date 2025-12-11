@@ -3,11 +3,17 @@
 "use client";
 
 import { useQuery, useMutation } from "@apollo/client";
-import { GET_CURRENTSELLER_PRODUCTS } from "../../../graphql/queries";
+import {
+  GET_CURRENTSELLER_PRODUCTS,
+  GET_PRODUCT_BY_ID,
+} from "../../../graphql/queries";
 import {
   UPDATE_PRODUCT_DETAILS,
   UPDATE_PRODUCTVAR_DETAILS,
   DELETE_PRODUCT,
+  UPDATE_PRODUCT_IMAGE,
+  DELETE_PRODUCT_IMAGE,
+  ADD_PRODUCT_IMAGES,
 } from "../../../graphql/mutations";
 import { useRouter } from "next/navigation";
 import { FormEvent, useEffect, useState } from "react";
@@ -15,22 +21,27 @@ import AnotherHeader from "../../../components/anotherheader";
 import Footer from "../../../components/Footer";
 import LoadingPage from "../../../components/LoadingPage";
 import React from "react";
+import Image from "next/image";
+import { useApolloClient } from "@apollo/client";
 
 export default function EditProductPage({
   params,
 }: {
   params: { id: string } | Promise<{ id: string }>;
 }) {
+  // ----- route param -----
   const resolvedParams = React.use(params as Promise<{ id: string }>);
-   const { id } = resolvedParams as { id: string };
-  const [activeTab, setActiveTab] = useState("details");
+  const { id } = resolvedParams as { id: string };
+
   const router = useRouter();
 
-  const [updatingVariationId, setUpdatingVariationId] = useState<string | null>(
-    null
-  );
-  const [isSavingAll, setIsSavingAll] = useState(false);
+  const [activeTab, setActiveTab] = useState<
+    "details" | "variations" | "images"
+  >("details");
 
+  const client = useApolloClient();
+
+  // ----- base product state -----
   const [formState, setFormState] = useState({
     name: "",
     description: "",
@@ -42,7 +53,9 @@ export default function EditProductPage({
   });
 
   const [variations, setVariations] = useState<any[]>([]);
+  const [isSavingAll, setIsSavingAll] = useState(false);
 
+  // ----- main products query -----
   const {
     data,
     loading: queryLoading,
@@ -69,6 +82,28 @@ export default function EditProductPage({
     }
   }, [product]);
 
+  // ----- images-specific query (optional, for fresh images) -----
+  const {
+    data: imageData,
+    loading: imagesLoading,
+    error: imagesError,
+    refetch: refetchImages,
+  } = useQuery(GET_PRODUCT_BY_ID, {
+    variables: { productId: id },
+    skip: !id,
+    fetchPolicy: "network-only",
+    nextFetchPolicy: "network-only",
+  });
+
+  // const productForImages = imageData?.product ?? product;
+  const productForImages =
+    imageData && imageData.product ? imageData.product : null;
+  //   console.log(
+  //   "render images:",
+  //   productForImages ? productForImages.images : "no productForImages yet"
+  // );
+
+  // ----- mutations -----
   const [
     updateVariation,
     { loading: variationUpdating, error: variationUpdateError },
@@ -76,6 +111,45 @@ export default function EditProductPage({
     refetchQueries: [{ query: GET_CURRENTSELLER_PRODUCTS }],
   });
 
+  const [updateProduct, { loading: mutationLoading, error: mutationError }] =
+    useMutation(UPDATE_PRODUCT_DETAILS, {
+      onCompleted: () => router.push("/dashboard"),
+    });
+
+  const [deleteProduct] = useMutation(DELETE_PRODUCT, {
+    onCompleted: () => router.push("/dashboard"),
+  });
+
+  const [updateProductImage, { loading: updating }] = useMutation(
+    UPDATE_PRODUCT_IMAGE,
+    {
+      onError: (err) => {
+        console.error("UPDATE_PRODUCT_IMAGE error:", err);
+      },
+    }
+  );
+
+  const [deleteProductImage, { loading: deleting }] = useMutation(
+    DELETE_PRODUCT_IMAGE,
+    {
+      onError: (err) => {
+        console.error("DELETE_PRODUCT_IMAGE error:", err);
+      },
+    }
+  );
+
+  const [addProductImages, { loading: adding }] = useMutation(
+    ADD_PRODUCT_IMAGES,
+    {
+      onError: (err) => {
+        console.error("ADD_PRODUCT_IMAGES error:", err);
+      },
+    }
+  );
+
+  const busy = updating || deleting || adding;
+
+  // ----- variations helpers -----
   const addVariation = () => {
     setVariations([...variations, { size: "", color: "", price: 0, stock: 0 }]);
   };
@@ -129,15 +203,7 @@ export default function EditProductPage({
     }
   };
 
-  const [updateProduct, { loading: mutationLoading, error: mutationError }] =
-    useMutation(UPDATE_PRODUCT_DETAILS, {
-      onCompleted: () => router.push("/dashboard"),
-    });
-
-  const [deleteProduct] = useMutation(DELETE_PRODUCT, {
-    onCompleted: () => router.push("/dashboard"),
-  });
-
+  // ----- details helpers -----
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     await updateProduct({
@@ -167,6 +233,76 @@ export default function EditProductPage({
     }));
   };
 
+  // ----- images helpers -----
+  const handleReplaceImage = async (imageId: number, file: File) => {
+    const formData = new FormData();
+    formData.append("images", file);
+
+    const res = await fetch("http://localhost:4000/upload/images", {
+      method: "POST",
+      body: formData,
+    });
+    const body = await res.json();
+    const uploaded = body.images?.[0];
+    if (!uploaded?.url) return;
+
+    await updateProductImage({
+      variables: { imageId, newUrl: uploaded.url },
+    });
+    await refetchImages({ productId: id });
+  };
+
+  const handleDeleteImage = async (imageKey: string) => {
+    if (!productForImages) return;
+
+    await deleteProductImage({
+      variables: { productId: productForImages.id, imageKey },
+    });
+    await refetchImages({ productId: id });
+  };
+
+  const handleAddImages = async (files: FileList) => {
+    const arr = Array.from(files);
+    if (!arr.length) return;
+
+    const formData = new FormData();
+    arr.forEach((f) => formData.append("images", f));
+
+    const res = await fetch("http://localhost:4000/upload/images", {
+      method: "POST",
+      body: formData,
+    });
+    const body = await res.json();
+    const urls: string[] = (body.images || []).map((x: any) => x.url);
+    if (!urls.length || !productForImages) return;
+
+    console.log("addProductImages vars before", {
+      productId: productForImages.id,
+      imageUrls: urls,
+    });
+    await addProductImages({
+      variables: { productId: productForImages.id, imageUrls: urls },
+    });
+
+    console.log("addProductImages vars after", {
+      productId: productForImages.id,
+      imageUrls: urls,
+    });
+
+    try {
+      await refetchImages({ productId: id });
+    } catch (e) {
+      console.error("refetchImages error:", e);
+    }
+
+    client.cache.evict({ fieldName: "getProductImages" });
+    client.cache.gc();
+    // client.clearStore(); // 👈 add this
+
+    await refetchImages({ productId: id });
+  };
+
+  // ----- loading / error -----
   if (queryLoading) return <LoadingPage />;
   if (queryError)
     return (
@@ -183,6 +319,7 @@ export default function EditProductPage({
       <div className="max-w-4xl mx-auto mt-5 p-8 bg-white rounded-lg">
         <h1 className="text-3xl font-bold mb-8">Edit Product</h1>
 
+        {/* Tabs */}
         <div className="flex border-b mb-6">
           <button
             className={`px-4 py-2 font-medium ${
@@ -194,6 +331,7 @@ export default function EditProductPage({
           >
             Product Details
           </button>
+
           <button
             className={`px-4 py-2 font-medium ${
               activeTab === "variations"
@@ -204,9 +342,21 @@ export default function EditProductPage({
           >
             Variations {variations?.length > 0 && `(${variations.length})`}
           </button>
+
+          <button
+            className={`px-4 py-2 font-medium ${
+              activeTab === "images"
+                ? "border-b-2 border-blue-500 text-blue-600"
+                : "text-gray-500"
+            }`}
+            onClick={() => setActiveTab("images")}
+          >
+            Images
+          </button>
         </div>
 
-        {activeTab === "details" ? (
+        {/* Tab content */}
+        {activeTab === "details" && (
           <form onSubmit={handleSubmit} className="space-y-8">
             <div>
               <label className="block font-semibold mb-1">Product Name</label>
@@ -314,7 +464,9 @@ export default function EditProductPage({
                 type="button"
                 onClick={async () => {
                   try {
-                    await deleteProduct({ variables: { deleteProductId: id } });
+                    await deleteProduct({
+                      variables: { deleteProductId: id },
+                    });
                   } catch (err) {
                     console.error("Delete failed:", err);
                   }
@@ -325,7 +477,9 @@ export default function EditProductPage({
               </button>
             </div>
           </form>
-        ) : (
+        )}
+
+        {activeTab === "variations" && (
           <div className="space-y-6">
             <h2 className="text-xl font-semibold">Product Variations</h2>
 
@@ -334,7 +488,7 @@ export default function EditProductPage({
                 <div className="space-y-4">
                   {variations.map((variation: any, index: number) => (
                     <div
-                      key={variation.id}
+                      key={variation.id ?? index}
                       className="p-4 border rounded-lg grid grid-cols-3 gap-4"
                     >
                       <div>
@@ -435,7 +589,102 @@ export default function EditProductPage({
             )}
           </div>
         )}
+
+        {activeTab === "images" && (
+          <div className="space-y-6">
+            {imagesLoading && <p>Loading images...</p>}
+            {imagesError && (
+              <p className="text-red-600 text-sm">
+                Failed to load product images: {imagesError.message}
+              </p>
+            )}
+            {!imagesLoading && !imagesError && productForImages && (
+              <>
+                <h2 className="text-xl font-semibold mb-2">
+                  Edit Images – {productForImages.name}
+                </h2>
+                <p className="text-sm text-gray-500 mb-4">
+                  Replace, remove or add product images.
+                </p>
+
+                {/* Existing images */}
+                <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-6">
+                  <h3 className="text-lg font-medium mb-3">Current images</h3>
+                  <div className="flex flex-wrap gap-4">
+                    {productForImages.images?.length ? (
+                      productForImages.images.map((img: any) => (
+                        <div
+                          key={img.id}
+                          className="flex flex-col items-center gap-2 w-28"
+                        >
+                          <div className="w-24 h-24 bg-gray-100 rounded-md overflow-hidden relative">
+                           <Image
+ src={`${img.url}`}
+  alt={productForImages.name}
+  fill
+  sizes="96px"
+  className="object-cover"
+/>
+
+                          </div>
+                          <label className="text-xs text-blue-600 cursor-pointer">
+                            Change
+                            <input
+                              type="file"
+                              accept="image/*"
+                              className="hidden"
+                              onChange={(e) => {
+                                const file = e.target.files?.[0];
+                                if (!file) return;
+                                void handleReplaceImage(img.id, file);
+                              }}
+                            />
+                          </label>
+                          <button
+                            type="button"
+                            className="text-xs text-red-600"
+                            onClick={() => void handleDeleteImage(img.key)}
+                          >
+                            Delete
+                          </button>
+                        </div>
+                      ))
+                    ) : (
+                      <p className="text-sm text-gray-500">
+                        No images yet for this product.
+                      </p>
+                    )}
+                  </div>
+                </div>
+
+                {/* Add new images */}
+                <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+                  <h3 className="text-lg font-medium mb-3">Add images</h3>
+                  <label className="block border-2 border-dashed border-gray-300 rounded-md p-4 text-center text-sm text-gray-600 cursor-pointer">
+                    <span>Select or drop images here</span>
+                    <input
+                      type="file"
+                      multiple
+                      accept="image/*"
+                      className="hidden"
+                      onChange={(e) =>
+                        e.target.files && handleAddImages(e.target.files)
+                      }
+                    />
+                  </label>
+                </div>
+
+                {busy && (
+                  <p className="mt-4 text-xs text-gray-500">
+                    Saving image changes, please wait...
+                  </p>
+                )}
+              </>
+            )}
+          </div>
+        )}
       </div>
+
       <Footer />
     </>
   );
