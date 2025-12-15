@@ -23,11 +23,13 @@ export const PRODUCT_FRAGMENT = gql`
     description
     averageRating
     reviewCount
-    images {
-      id
-      url
-      key
-    }
+   images {
+  id
+  url
+  key
+  isPrimary
+  position
+}
   }
 `;
 

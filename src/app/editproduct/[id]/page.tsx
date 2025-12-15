@@ -14,6 +14,8 @@ import {
   UPDATE_PRODUCT_IMAGE,
   DELETE_PRODUCT_IMAGE,
   ADD_PRODUCT_IMAGES,
+  SET_PRIMARY_PRODUCT_IMAGE,
+  MOVE_PRODUCT_IMAGE,
 } from "../../../graphql/mutations";
 import { useRouter } from "next/navigation";
 import { FormEvent, useEffect, useState } from "react";
@@ -95,9 +97,20 @@ export default function EditProductPage({
     nextFetchPolicy: "network-only",
   });
 
+  
   // const productForImages = imageData?.product ?? product;
-  const productForImages =
-    imageData && imageData.product ? imageData.product : null;
+// Prefer fresh product from GET_PRODUCT_BY_ID, fallback to list query
+const productFromList = product;
+const productFromById = imageData?.product;
+const productForImages = productFromById ?? productFromList;
+
+ const sortedImages =
+    productForImages?.images
+      ? [...productForImages.images].sort(
+          (a: any, b: any) => (a.position ?? 0) - (b.position ?? 0)
+        )
+      : [];
+
   //   console.log(
   //   "render images:",
   //   productForImages ? productForImages.images : "no productForImages yet"
@@ -144,6 +157,20 @@ export default function EditProductPage({
       onError: (err) => {
         console.error("ADD_PRODUCT_IMAGES error:", err);
       },
+    }
+  );
+
+   const [setPrimaryImage, { loading: settingPrimary }] = useMutation(
+    SET_PRIMARY_PRODUCT_IMAGE,
+    {
+      onCompleted: () => refetchImages({ productId: id }),
+    }
+  );
+
+  const [moveImage, { loading: movingImage }] = useMutation(
+    MOVE_PRODUCT_IMAGE,
+    {
+      onCompleted: () => refetchImages({ productId: id }),
     }
   );
 

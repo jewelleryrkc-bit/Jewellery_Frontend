@@ -14,8 +14,7 @@ import { redirect } from "next/navigation";
 import AnotherHeader from "../../../../components/anotherheader";
 import Footer from "../../../../components/Footer";
 import Image from "next/image";
-import {ProductImageInput} from "../../../../types/type"
-
+import { ProductImageInput } from "../../../../types/type";
 
 type Variation = {
   size: string;
@@ -23,50 +22,6 @@ type Variation = {
   price: number;
   stock: number;
 };
-
-// type AddProductFormInputs = {
-//   name: string;
-//   description: string;
-//   price: number;
-//   stock: number;
-//   material: string;
-//   size: string;
-//   weight: string;
-//   category: string;
-//   subcategory: string;
-//   brand: string;
-//   style: string;
-//   type: string;
-//   upc: string;
-//   color: string;
-//   mainStoneColor: string;
-//   department: string;
-//   metal: string;
-//   diamondColorGrade: string;
-//   mainStoneShape: string;
-//   mainStoneTreatment: string;
-//   settingStyle: string;
-//   country: string;
-//   itemLength: string;
-//   mainStoneCreation: string;
-//   totalCaratWeight: string;
-//   baseMetal: string;
-//   numberOfDiamonds: string;
-//   shape: string;
-//   theme: string;
-//   chainType: string;
-//   closure: string;
-//   charmType: string;
-//   features: string[];
-//   personalized: string;
-//   personalizeInstruction: string;
-//   mpn: string;
-//   signed: string;
-//   vintage: string;
-//   wholesale: string;
-//   variations?: Variation[];
-//   vendorId?: string;
-// };
 
 export type ProductVariationInput = {
   size: string;
@@ -133,6 +88,12 @@ type UploadedImage = {
   key: string;
 };
 
+type LocalMedia = {
+  file: File;
+  previewUrl: string;
+  type: "image" | "video";
+};
+
 const colors = [
   "Beige",
   "Black",
@@ -152,6 +113,7 @@ const colors = [
   "White",
   "Yellow",
 ];
+
 const mainStoneColors = [
   "Aqua",
   "Canary",
@@ -162,7 +124,9 @@ const mainStoneColors = [
   "Turquoise",
   ...colors,
 ];
+
 const departments = ["Boys", "Girls", "Unisex baby & toddler", "Unisex kids"];
+
 const metals = [
   "Aluminium",
   "Brass",
@@ -198,6 +162,7 @@ const metals = [
   "Yellow gold filled",
   "Yellow gold plated",
 ];
+
 const diamondColorGrades = [
   "D",
   "E",
@@ -223,6 +188,7 @@ const diamondColorGrades = [
   "Y",
   "Z",
 ];
+
 const mainStoneShapes = [
   "Asscher",
   "Baguette",
@@ -247,6 +213,7 @@ const mainStoneShapes = [
   "Trapezoid",
   "Trillion",
 ];
+
 const mainStoneTreatments = [
   "Bleached",
   "Clarity enhanced",
@@ -263,6 +230,7 @@ const mainStoneTreatments = [
   "Surface coated",
   "Unknown",
 ];
+
 const settingStyles = [
   "Halo",
   "Bar",
@@ -275,6 +243,7 @@ const settingStyles = [
   "Solitaire",
   "Tension",
 ];
+
 const countries = [
   "United States",
   "China",
@@ -284,7 +253,9 @@ const countries = [
   "Turkey",
   "Other",
 ];
+
 const itemLengths = Array.from({ length: 6 }, (_, i) => `${5 + i} in`);
+
 const mainStoneCreations = [
   "Cultured",
   "Lab-created",
@@ -292,6 +263,7 @@ const mainStoneCreations = [
   "Simulated",
   "Unknown",
 ];
+
 const shapes = [
   "Asymmetrical",
   "Bow",
@@ -316,6 +288,7 @@ const shapes = [
   "Teardrop",
   "Triangle",
 ];
+
 const themes = [
   "Art",
   "Beauty",
@@ -354,6 +327,7 @@ const themes = [
   "Sports",
   "Toys and games",
 ];
+
 const chainTypes = [
   "Anchor/Mariner",
   "Ball/Bead",
@@ -391,6 +365,7 @@ const chainTypes = [
   "Venetian link",
   "Wire",
 ];
+
 const closures = [
   "Ball",
   "Barrel",
@@ -409,6 +384,7 @@ const closures = [
   "Toggle",
   "Tumlock",
 ];
+
 const charmTypes = [
   "Bead",
   "Clip",
@@ -422,6 +398,7 @@ const charmTypes = [
   "Spacer",
   "Traditional",
 ];
+
 const features = [
   "Adjustable",
   "Engraved",
@@ -434,27 +411,54 @@ const features = [
 export default function AddProduct() {
   const [addProduct] = useMutation(CREATE_PRODUCT);
   const { data: cdata, loading: cloading } = useQuery(ME_QUERY);
+
   const [selectedParentCategory, setSelectedParentCategory] = useState<
     string | null
   >(null);
+
+  const [mediaError, setMediaError] = useState<string | null>(null);
+
   const { data: categoriesData, loading: categoriesLoading } = useQuery(
     GET_PARENT_CATEGORIES
   );
+
   const [errorMessage, setErrorMessage] = useState("");
   const [variations, setVariations] = useState<Variation[]>([]);
   const [selectedFeatures, setSelectedFeatures] = useState<string[]>([]);
   const featuresString = selectedFeatures.join(", ");
+
   const fileInputRef = useRef<HTMLInputElement | null>(null);
-  const [selectedImages, setSelectedImages] = useState<File[]>([]);
-  
+  const [media, setMedia] = useState<LocalMedia[]>([]);
 
   const handleFiles = (files: FileList) => {
-    const newFiles = Array.from(files);
-    setSelectedImages((prev) => [...prev, ...newFiles]);
-  };
+    const arr = Array.from(files);
 
-  const removeImage = (index: number) => {
-    setSelectedImages((prev) => prev.filter((_, i) => i !== index));
+    setMedia((prev) => {
+      const next = [...prev];
+      const hasVideo = next.some((m) => m.type === "video");
+      let imageCount = next.filter((m) => m.type === "image").length;
+
+      for (const f of arr) {
+        if (f.type.startsWith("video/")) {
+          if (hasVideo) {
+            setMediaError("Only one video is allowed per product.");
+            continue;
+          }
+          const previewUrl = URL.createObjectURL(f);
+          next.push({ file: f, previewUrl, type: "video" });
+        } else if (f.type.startsWith("image/")) {
+          if (imageCount >= 24) {
+            setMediaError("A product can have at most 24 images.");
+            continue;
+          }
+          const previewUrl = URL.createObjectURL(f);
+          next.push({ file: f, previewUrl, type: "image" });
+          imageCount += 1;
+        }
+      }
+
+      return next;
+    });
   };
 
   const onDragOver = (e: React.DragEvent<HTMLDivElement>) => {
@@ -469,25 +473,9 @@ export default function AddProduct() {
     }
   };
 
-  const uploadImagesToBackend = async () => {
-    if (selectedImages.length === 0) return [];
-
-    const formData = new FormData();
-    selectedImages.forEach((img) => formData.append("images", img));
-
-    const res = await fetch("http://localhost:4000/upload/images", {
-      method: "POST",
-      body: formData,
-    });
-
-    const data = await res.json();
-    return data.images || [];
-  };
-
   useEffect(() => {
     if (!cloading && (!cdata || !cdata.me)) {
       redirect("/");
-      // window.location.href = "/";
     }
   }, [cdata, cloading]);
 
@@ -541,7 +529,7 @@ export default function AddProduct() {
     );
   };
 
-  const onSubmit = async (data:AddProductFormInputs) => {
+  const onSubmit = async (data: AddProductFormInputs) => {
     // Validate variations
     for (const [index, variation] of variations.entries()) {
       if (
@@ -566,51 +554,78 @@ export default function AddProduct() {
       return;
     }
 
-    if (selectedImages.length === 0) {
+    const imageMedia = media.filter((m) => m.type === "image");
+    const videoMedia = media.find((m) => m.type === "video");
+
+    if (imageMedia.length === 0) {
       setErrorMessage("At least one product image is required.");
       return;
     }
 
+    if (imageMedia.length > 24) {
+      setErrorMessage("A product can have at most 24 images.");
+      return;
+    }
+
     try {
-      const uploadedImages = await uploadImagesToBackend();
-      // const imageUrls = uploadedImages.map((img: UploadedImage) => img.url);
-      const imagesInput = uploadedImages.map((img: UploadedImage) => ({
+      // upload images
+      const imgFormData = new FormData();
+      imageMedia.forEach((m) => imgFormData.append("images", m.file));
+
+      const imgRes = await fetch("http://localhost:4000/upload/images", {
+        method: "POST",
+        body: imgFormData,
+      });
+
+      const imgBody = await imgRes.json();
+      const uploadedImages: UploadedImage[] = imgBody.images || [];
+
+      const imagesInput: ProductImageInput[] = uploadedImages.map((img) => ({
         url: img.url,
         key: img.key,
       }));
 
-      
+      // upload video (optional)
+      let videoUrl: string | undefined;
+      let videoKey: string | undefined;
+
+      if (videoMedia) {
+        const vFormData = new FormData();
+        vFormData.append("video", videoMedia.file);
+
+        const vRes = await fetch("http://localhost:4000/upload/video", {
+          method: "POST",
+          body: vFormData,
+        });
+
+        const vBody = await vRes.json();
+        if (vBody.video) {
+          videoUrl = vBody.video.url;
+          videoKey = vBody.video.key;
+        }
+      }
+
       const productInput = {
         ...data,
         variations: variations,
         features: featuresString,
         ...(data.subcategory ? { subcategory: data.subcategory } : {}),
+        videoUrl,
+        videoKey,
       };
 
-       const variables: any = {
-      input: {
-        ...productInput,
-        images: imagesInput,   // <-- VERY IMPORTANT
-      },
-    }
-    
-      // Include vendorId only if admin
-    if (data.vendorId) {
-      variables.input.vendorId = data.vendorId;
-    }
+      const variables: any = {
+        input: {
+          ...productInput,
+          images: imagesInput,
+        },
+      };
 
-      // Execute mutation
+      if (data.vendorId) {
+        variables.input.vendorId = data.vendorId;
+      }
+
       const response = await addProduct({ variables });
-      
-      // const response = await addProduct({
-      //   variables: {
-      //     input: {
-      //       input: productInput,
-      //       images: imagesInput,
-      //       vendorId: vendorId,
-      //     },
-      //   },
-      // });
 
       if (response.data?.createProduct?.id) {
         window.location.href = "/dashboard";
@@ -642,6 +657,12 @@ export default function AddProduct() {
         )}
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
+          {mediaError && (
+            <div className="mb-4 rounded-md bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700">
+              {mediaError}
+            </div>
+          )}
+
           {/* Photos Section */}
           <div className="space-y-4">
             <h3 className="text-lg font-semibold text-gray-700">Photos</h3>
@@ -665,14 +686,16 @@ export default function AddProduct() {
                   d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
                 />
               </svg>
-              <p>Drag and drop product images here</p>
-              <p className="text-sm text-gray-400 mt-1">or click to browse</p>
+              <p>Drag and drop product images or one video here</p>
+              <p className="text-sm text-gray-400 mt-1">
+                Up to 24 images and 1 video (optional)
+              </p>
             </div>
 
             <input
               type="file"
               multiple
-              accept="image/*"
+              accept="image/*,video/*"
               ref={fileInputRef}
               className="hidden"
               onChange={(e) => {
@@ -680,29 +703,68 @@ export default function AddProduct() {
               }}
             />
 
-            {/* Preview Selected Images */}
-            {selectedImages.length > 0 && (
+            {media.length > 0 && (
               <div className="flex flex-wrap gap-2 mt-2">
-                {selectedImages.map((file, idx) => {
-                  const preview = URL.createObjectURL(file);
+                {media.map((m, idx) => {
+                  const firstImageIndex = media.findIndex(
+                    (x) => x.type === "image"
+                  );
+                  const isMainImage =
+                    m.type === "image" && idx === firstImageIndex;
+
                   return (
                     <div
                       key={idx}
-                      className="w-20 h-20 relative rounded-md overflow-hidden border border-gray-300"
+                      draggable
+                      onDragStart={(e) =>
+                        e.dataTransfer.setData("text/plain", String(idx))
+                      }
+                      onDragOver={(e) => e.preventDefault()}
+                      onDrop={(e) => {
+                        e.preventDefault();
+                        const from = Number(
+                          e.dataTransfer.getData("text/plain")
+                        );
+                        const to = idx;
+                        setMedia((prev) => {
+                          const copy = [...prev];
+                          const [item] = copy.splice(from, 1);
+                          copy.splice(to, 0, item);
+                          return copy;
+                        });
+                      }}
+                      className={`w-20 h-20 relative rounded-md overflow-hidden border ${
+                        isMainImage ? "border-blue-500" : "border-gray-300"
+                      }`}
                     >
-                      <Image
-                        src={preview}
-                        alt={`Preview ${idx}`}
-                        fill
-                        className="object-cover"
-                        onLoad={() => URL.revokeObjectURL(preview)}
+                      {m.type === "image" ? (
+                        <Image
+                          src={m.previewUrl}
+                          alt={`Preview ${idx}`}
+                          fill
+                          className="object-cover"
                           unoptimized
-                      />
+                        />
+                      ) : (
+                        <video
+                          src={m.previewUrl}
+                          className="w-full h-full object-cover"
+                          muted
+                        />
+                      )}
+
+                      {isMainImage && (
+                        <span className="absolute bottom-0 left-0 right-0 bg-blue-600 text-white text-[10px] text-center">
+                          Main
+                        </span>
+                      )}
 
                       <button
                         type="button"
                         className="absolute top-1 right-1 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs"
-                        onClick={() => removeImage(idx)}
+                        onClick={() =>
+                          setMedia((prev) => prev.filter((_, i) => i !== idx))
+                        }
                       >
                         &times;
                       </button>
@@ -714,7 +776,6 @@ export default function AddProduct() {
           </div>
 
           {/* Title Section */}
-
           <div className="space-y-2">
             <label className="block text-sm font-medium text-gray-700">
               Title

@@ -7,6 +7,8 @@ export interface ProductImage {
   id?: string;
   url: string;
   key: string;
+  isPrimary?: boolean;
+  position?: number;
 }
 
 export interface Product {
@@ -26,7 +28,11 @@ export interface Product {
     id: string;
     name: string;
   };
+  createdAt: string;      
+  updatedAt: string;     
+  
 }
+
 
 export interface Variation {
   id: string;

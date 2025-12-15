@@ -89,11 +89,13 @@ export const GET_WISHLISTS = gql`
           slug
           averageRating
           reviewCount
-          images {
-            id
-            url
-            key
-          }
+         images {
+  id
+  url
+  key
+  isPrimary
+  position
+}
             category {
           id
           name
@@ -150,11 +152,13 @@ export const CATEGORY_BY_SLUG = gql`
         averageRating
         soldCount
         material
-        images {
-        id
-          url
-          key
-        }
+       images {
+  id
+  url
+  key
+  isPrimary
+  position
+}
         category {
           name
         }
@@ -210,11 +214,13 @@ export const ALL_PRODUCTS_QUERY = gql `
         price
         size
       }
-         images {
-        id
-        url
-        key
-      }
+        images {
+  id
+  url
+  key
+  isPrimary
+  position
+}
     }
   }
 `;
@@ -245,11 +251,13 @@ export const ALL_PRODUCTS_QUERY_FOR_ADMIN = gql `
         price
         size
       }
-      images {
-        id
-        url
-        key
-      }
+     images {
+  id
+  url
+  key
+  isPrimary
+  position
+}
     }
   }
 `;
@@ -353,11 +361,13 @@ export const GET_PRODUCT_BY_ID = gql `
     company {
       cname
     }
-    images {
-      id
-      url
-      key
-    }
+   images {
+  id
+  url
+  key
+  isPrimary
+  position
+}
   }
 }
 `;
@@ -408,11 +418,13 @@ export const GET_PRODUCT_BY_SLUG = gql`
       signed
       vintage
       wholesale
-       images {
-        id
-        key
-        url
-      }
+     images {
+  id
+  url
+  key
+  isPrimary
+  position
+}
       reviews {
         id
         comment
@@ -479,11 +491,13 @@ export const FILTERED_PRODUCTS_QUERY = gql`
       price
       size
       }  
-      images {
-        id
-        key
-        url
-      }
+     images {
+  id
+  url
+  key
+  isPrimary
+  position
+}
     }
   }
 `;
@@ -635,11 +649,13 @@ export const GET_SIMILAR_PRODUCTS = gql `
     reviewCount
     description
     material
-    images {
-      id
-      key
-      url
-    }
+ images {
+  id
+  url
+  key
+  isPrimary
+  position
+}
   }
 }
 `;
@@ -737,11 +753,13 @@ export const GET_CURRENTSELLER_PRODUCTS = gql `
     company {
       cname
     }
-      images {
-        id
-        key
-        url
-      }
+     images {
+  id
+  url
+  key
+  isPrimary
+  position
+}
   }
 }
 `;
@@ -803,11 +821,13 @@ export const SELLER_PRODUCT_PAGINATION = gql`
         id
         name
       }
-      images {
-        id
-        key
-        url
-      }
+     images {
+  id
+  url
+  key
+  isPrimary
+  position
+}
     }
     total
     hasMore
@@ -826,11 +846,13 @@ export const GET_CART_ITEMS = gql`
         price
         description
         material
-        images
-        category {
-          id
-          name
-        }
+        images {
+  id
+  url
+  key
+  isPrimary
+  position
+}
       }
       variation {
         id
@@ -968,10 +990,12 @@ export const GET_PRODUCTS_BY_CATEGORY = gql `
       price
       material
         images {
-        id
-      url
-      key
-    }
+  id
+  url
+  key
+  isPrimary
+  position
+}
       reviews {
       rating
       }
@@ -1006,11 +1030,13 @@ export const GET_TOP_RATED_PRODUCTS = gql `
       reviews {
         rating
       }
-      images {
-        id
-        url
-        key
-      }
+     images {
+  id
+  url
+  key
+  isPrimary
+  position
+}
     }
   }
 `;

@@ -442,10 +442,12 @@ export const ADD_TO_WISHLIST = gql`
         slug
         reviewCount
         images {
-          id
-          url
-          key
-        }
+  id
+  url
+  key
+  isPrimary
+  position
+}
         category {      
           id
           name
@@ -477,10 +479,12 @@ export const TOGGLE_WISHLIST = gql`
         averageRating
         reviewCount
         images {
-          id
-          url
-          key
-        }
+  id
+  url
+  key
+  isPrimary
+  position
+}
           category {       
           id
           name
@@ -701,6 +705,17 @@ export const ADD_PRODUCT_IMAGES = gql`
   }
 `;
 
+export const SET_PRIMARY_PRODUCT_IMAGE = gql`
+mutation SetPrimaryProductImage($imageId: Int!) {
+  setPrimaryProductImage(imageId: $imageId)
+}
+`;
+
+export const MOVE_PRODUCT_IMAGE = gql`
+mutation MoveProductImage($imageId: Int!, $direction: String!) {
+  moveProductImage(imageId: $imageId, direction: $direction)
+}
+`;
 
 export const CREATE_REVIEW = gql `
  mutation($input: ReviewInput!) {
@@ -721,6 +736,12 @@ export const CREATE_REVIEW = gql `
         reviewCount
       }
     }
+  }
+`;
+
+export const DELETE_MULTIPLE_PRODUCTS = gql`
+  mutation DeleteMultipleProducts($ids: [String!]!) {
+    deleteMultipleProducts(ids: $ids)
   }
 `;
 
