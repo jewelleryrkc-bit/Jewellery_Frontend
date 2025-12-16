@@ -4,7 +4,7 @@
 
 import { useQuery, useMutation, gql, ApolloCache } from "@apollo/client";
 import toast from "react-hot-toast";
-import { GET_WISHLISTS,ALL_PRODUCTS_QUERY } from "../graphql/queries";
+import { GET_WISHLISTS,ALL_PRODUCTS_QUERY,FILTERED_PRODUCTS_QUERY } from "../graphql/queries";
 import { TOGGLE_WISHLIST } from "../graphql/mutations";
 import { WishlistItem, Product } from "../types/type";
 
@@ -53,7 +53,8 @@ export const useWishlist = () => {
       variables: { productId: product.id, variationId: null },
       refetchQueries: [
        { query: GET_WISHLISTS },
-    { query: ALL_PRODUCTS_QUERY }, // Add other product list queries
+    { query: ALL_PRODUCTS_QUERY }, 
+     { query: FILTERED_PRODUCTS_QUERY }, 
       ],
     });
     

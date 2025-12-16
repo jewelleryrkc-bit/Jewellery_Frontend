@@ -495,6 +495,7 @@ export const FILTERED_PRODUCTS_QUERY = gql`
       reviewCount
       slug
       averageRating
+      wishlistCount 
       category {
         id
         name

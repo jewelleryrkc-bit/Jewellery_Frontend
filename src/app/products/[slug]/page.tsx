@@ -292,29 +292,30 @@ export default function ProductPage() {
   {/* Shadow card slightly bigger than image */}
   <div className="relative bg-gray-100 rounded-xl shadow-lg p-4">
     {/* ❤️ wishlist button */}
-    <button
-      onClick={(e) => {
-        e.preventDefault();
-       toggleWishlist(product);
-      }}
-      className="absolute top-3 right-3 z-10 p-2 rounded-full bg-white/90 hover:bg-white shadow"
-      aria-label={
-        isInWishlist(product.id)
-          ? "Remove from wishlist"
-          : "Add to wishlist"
-      }
-    >
-      <HeartIcon
-        className={`h-5 w-5 ${
-          isInWishlist(product.id)
-            ? "text-red-500 fill-red-500"
-            : "text-gray-400"
-        }`}
-      />
-      <span className="ml-1 text-xs text-gray-700">
-        {product.wishlistCount ?? 0}
-      </span>
-    </button>
+   <button
+  onClick={(e) => {
+    e.preventDefault();
+    toggleWishlist(product);
+  }}
+  className="absolute top-3 right-3 z-10 p-2 rounded-full bg-white/90 hover:bg-white shadow flex items-center"
+  aria-label={
+    isInWishlist(product.id)
+      ? "Remove from wishlist"
+      : "Add to wishlist"
+  }
+>
+  <HeartIcon
+    className={`h-5 w-5 ${
+      isInWishlist(product.id)
+        ? "text-red-500 fill-red-500"
+        : "text-gray-400"
+    }`}
+  />
+  <span className="ml-1 text-xs text-gray-700">
+    {isInWishlist(product.id) ? 1 : 0}
+  </span>
+</button>
+
 
     <div className="relative mx-auto max-w-xl aspect-[4/3]">
       <Image
