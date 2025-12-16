@@ -13,13 +13,16 @@ import LoadingPage from "@/components/LoadingPage";
 import { useWishlist } from "../../../hooks/useWishlist";
 import React from "react";
 
-export default function CategoryPage({ params }: { params: Promise<{ slug: string }> }) {
+export default function CategoryPage({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}) {
   const unwrappedParams = React.use(params);
   const { slug } = unwrappedParams;
   const { currency } = useCurrency();
-  const {toggleWishlist, isInWishlist } = useWishlist();
+  const { toggleWishlist, isInWishlist } = useWishlist();
 
- 
   // Category data
   const {
     data: categoryData,
@@ -96,9 +99,9 @@ export default function CategoryPage({ params }: { params: Promise<{ slug: strin
               <button
                 onClick={(e) => {
                   e.preventDefault();
-                  toggleWishlist(product.id, product.name);
+                  toggleWishlist(product);
                 }}
-                className="absolute top-3 right-3 z-10 p-2 rounded-full bg-white/90 hover:bg-white transition-all shadow-sm"
+                className="absolute top-3 right-3 z-10 p-2 rounded-full bg-white/90 hover:bg-white transition-all shadow-sm flex items-center gap-1"
                 aria-label={
                   isInWishlist(product.id)
                     ? "Remove from wishlist"
@@ -112,6 +115,9 @@ export default function CategoryPage({ params }: { params: Promise<{ slug: strin
                       : "text-gray-400 hover:text-red-500"
                   } transition-colors`}
                 />
+                <span className="text-[10px] text-gray-700">
+                  {product.wishlistCount ?? 0}
+                </span>
               </button>
 
               <div className="p-4">

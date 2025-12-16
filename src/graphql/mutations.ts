@@ -97,107 +97,106 @@ export const WE_QUERY = gql`
 `;
 
 export const UPDATE_USER_FIELDS = gql`
- mutation($input: UpdateRegisterInput!, $userid: String!) {
-  updateUserFields(input: $input, userid: $userid) {
-    username
-    email
-    contact
+  mutation ($input: UpdateRegisterInput!, $userid: String!) {
+    updateUserFields(input: $input, userid: $userid) {
+      username
+      email
+      contact
+    }
   }
-}
 `;
 
 export const UPDATE_COMPANY_FIELDS = gql`
- mutation($input: UpdateCompanyInput!, $companyid: String!) {
-  updateCompanyfields(input: $input, companyid: $companyid) {
-    username
-    contact
-    email
+  mutation ($input: UpdateCompanyInput!, $companyid: String!) {
+    updateCompanyfields(input: $input, companyid: $companyid) {
+      username
+      contact
+      email
+    }
   }
-}
 `;
-
 
 export const CREATE_REVIEW_COMPANY = gql`
- mutation($input: CompanyReviewInput!) {
-  createCompanyReview(input: $input) {
-    id
-    comment
-    rating
-    createdAt
-    company {
-      cname
-      averageRating
-    }
-    user {
+  mutation ($input: CompanyReviewInput!) {
+    createCompanyReview(input: $input) {
       id
-      username
+      comment
+      rating
+      createdAt
+      company {
+        cname
+        averageRating
+      }
+      user {
+        id
+        username
+      }
     }
   }
-}
 `;
 
-export const CREATE_PRODUCT_REPORT = gql `
- mutation($input: ProductReportInput!){
-  createProductReport(input: $input) {
-    id
-    details
-    createdAt
-    reason
-    status
-    company {
+export const CREATE_PRODUCT_REPORT = gql`
+  mutation ($input: ProductReportInput!) {
+    createProductReport(input: $input) {
       id
-      cname
-      email
-    }
-    product {
-      id
-      name
-      price
-      slug
-    }
-    reportedBy {
-      id
-      email
-      contact
-      username
+      details
+      createdAt
+      reason
+      status
+      company {
+        id
+        cname
+        email
+      }
+      product {
+        id
+        name
+        price
+        slug
+      }
+      reportedBy {
+        id
+        email
+        contact
+        username
+      }
     }
   }
-}
 `;
 
 export const UPDATE_PRODUCT_DETAILS = gql`
- mutation($input: UpdateProductFields!, $updateProductsId: String!) {
-  updateProducts(input: $input, id: $updateProductsId) {
-    id
-    name
-    description
-    price
-    stock
-    size
-    weight
-    material
+  mutation ($input: UpdateProductFields!, $updateProductsId: String!) {
+    updateProducts(input: $input, id: $updateProductsId) {
+      id
+      name
+      description
+      price
+      stock
+      size
+      weight
+      material
+    }
   }
-}
 `;
 
 export const UPDATE_PRODUCTVAR_DETAILS = gql`
- mutation($input: UpdateProductVariations!, $updateProductVarId: String!) {
-  updateProductVar(input: $input, id: $updateProductVarId) {
-    size
-    stock
-    color
-    price
+  mutation ($input: UpdateProductVariations!, $updateProductVarId: String!) {
+    updateProductVar(input: $input, id: $updateProductVarId) {
+      size
+      stock
+      color
+      price
+    }
   }
-}
 `;
 
-export const DELETE_PRODUCT = gql `
- mutation($deleteProductId: String!) {
-  deleteProduct(id: $deleteProductId) {
-    id
-    name
+export const DELETE_PRODUCT = gql`
+  mutation ($deleteProductId: String!) {
+    deleteProduct(id: $deleteProductId) {
+      id
+      name
+    }
   }
-}
 `;
 
 export const LOGOUT_MUTATION = gql`
@@ -206,27 +205,27 @@ export const LOGOUT_MUTATION = gql`
   }
 `;
 
-export const DELETE_REVIEW = gql `
- mutation($reviewId: String!) {
-  deleteReview(reviewId: $reviewId)
-}
-`;
-
-export const ADMIN_LOGIN = gql `
- mutation($options: AdminLoginInput!) {
-  adminLogin(options: $options) {
-    errors {
-      field
-      message
-    }   
+export const DELETE_REVIEW = gql`
+  mutation ($reviewId: String!) {
+    deleteReview(reviewId: $reviewId)
   }
-}
 `;
 
-export const ADMIN_LOGOUT = gql `
+export const ADMIN_LOGIN = gql`
+  mutation ($options: AdminLoginInput!) {
+    adminLogin(options: $options) {
+      errors {
+        field
+        message
+      }
+    }
+  }
+`;
+
+export const ADMIN_LOGOUT = gql`
   mutation {
-  adminLogout
-}
+    adminLogout
+  }
 `;
 
 export const REGISTER_COMPANY = gql`
@@ -236,7 +235,7 @@ export const REGISTER_COMPANY = gql`
         field
         message
       }
-       company {
+      company {
         id
         cname
         username
@@ -244,7 +243,7 @@ export const REGISTER_COMPANY = gql`
         contact
         location
         isEmailVerified
-     }
+      }
     }
   }
 `;
@@ -267,7 +266,7 @@ export const LOGIN_COMPANY = gql`
 
 export const VERIFY_COMPANY = gql`
   mutation VerifyCompany($email: String!, $code: String!) {
-    verifyCompany(input: {email: $email,code: $code}) {
+    verifyCompany(input: { email: $email, code: $code }) {
       errors {
         field
         message
@@ -282,62 +281,72 @@ export const VERIFY_COMPANY = gql`
   }
 `;
 
-export const CREATE_COUPON = gql `
- mutation CreateCoupon($usageLimit: Float!, $validityDays: Float!, $isPublic: Boolean!, $discountPercentage: Float!) {
-  createCoupon(usageLimit: $usageLimit, validityDays: $validityDays, isPublic: $isPublic, discountPercentage: $discountPercentage) {
-    id
-    code
-    createdAt
-    updatedAt
-    discountPercentage
-    isPublic
-    startDate
-    endDate
-    usageLimit
-    company {
+export const CREATE_COUPON = gql`
+  mutation CreateCoupon(
+    $usageLimit: Float!
+    $validityDays: Float!
+    $isPublic: Boolean!
+    $discountPercentage: Float!
+  ) {
+    createCoupon(
+      usageLimit: $usageLimit
+      validityDays: $validityDays
+      isPublic: $isPublic
+      discountPercentage: $discountPercentage
+    ) {
       id
-      cname
-    }
-    usages {
-      id
-      orderId
-      usedAt
-      userId
-      coupon {
-        code
+      code
+      createdAt
+      updatedAt
+      discountPercentage
+      isPublic
+      startDate
+      endDate
+      usageLimit
+      company {
+        id
+        cname
+      }
+      usages {
+        id
+        orderId
+        usedAt
+        userId
+        coupon {
+          code
+        }
       }
     }
   }
-}
 `;
 
-export const CREATE_CUSTOM_COUPON = gql `
- mutation createCustomCoupon($input: ManualCodeInput!) {
-  createCustomCoupon(input: $input) {
-    id
-    code
-    createdAt
-    updatedAt
-    discountPercentage
-    isPublic
-    startDate
-    endDate
-    usageLimit
-    company {
+export const CREATE_CUSTOM_COUPON = gql`
+  mutation createCustomCoupon($input: ManualCodeInput!) {
+    createCustomCoupon(input: $input) {
       id
-      cname
-    }
-    usages {
-      id
-      orderId
-      usedAt
-      userId
-      coupon {
-        code
+      code
+      createdAt
+      updatedAt
+      discountPercentage
+      isPublic
+      startDate
+      endDate
+      usageLimit
+      company {
+        id
+        cname
+      }
+      usages {
+        id
+        orderId
+        usedAt
+        userId
+        coupon {
+          code
+        }
       }
     }
   }
-}
 `;
 
 export const APPLY_COUPON = gql`
@@ -361,7 +370,7 @@ export const APPLY_COUPON = gql`
 `;
 
 export const CREATE_PRODUCT = gql`
-  mutation($input: ProductInput!) {
+  mutation ($input: ProductInput!) {
     createProduct(input: $input) {
       id
       name
@@ -414,8 +423,8 @@ export const CREATE_PRODUCT = gql`
   }
 `;
 
-export const LOGIN_ADMIN = gql `
-  mutation($options: AdminLoginInput!) {
+export const LOGIN_ADMIN = gql`
+  mutation ($options: AdminLoginInput!) {
     adminLogin(options: $options) {
       admin {
         email
@@ -442,13 +451,13 @@ export const ADD_TO_WISHLIST = gql`
         slug
         reviewCount
         images {
-  id
-  url
-  key
-  isPrimary
-  position
-}
-        category {      
+          id
+          url
+          key
+          isPrimary
+          position
+        }
+        category {
           id
           name
         }
@@ -462,7 +471,6 @@ export const ADD_TO_WISHLIST = gql`
     }
   }
 `;
-
 
 export const TOGGLE_WISHLIST = gql`
   mutation ToggleWishlist($productId: String!, $variationId: String) {
@@ -478,14 +486,15 @@ export const TOGGLE_WISHLIST = gql`
         price
         averageRating
         reviewCount
+        wishlistCount
         images {
-  id
-  url
-  key
-  isPrimary
-  position
-}
-          category {       
+          id
+          url
+          key
+          isPrimary
+          position
+        }
+        category {
           id
           name
         }
@@ -499,8 +508,6 @@ export const TOGGLE_WISHLIST = gql`
     }
   }
 `;
-
-
 
 export const REMOVE_WISHLIST_ITEM = gql`
   mutation RemoveWishlistItem($itemId: String!) {
@@ -518,9 +525,9 @@ export const UPDATE_ORDER_STATUS = gql`
 `;
 
 export const TOGGLE_PRODUCT_STATUS = gql`
- mutation ToggleProductStatus($status: ProductStatus!, $productId: String!) {
-  toggleProductStatus(status: $status, productId: $productId)
-}
+  mutation ToggleProductStatus($status: ProductStatus!, $productId: String!) {
+    toggleProductStatus(status: $status, productId: $productId)
+  }
 `;
 
 export const CREATE_USER_ADDRESS = gql`
@@ -537,8 +544,8 @@ export const CREATE_USER_ADDRESS = gql`
   }
 `;
 
-export const REGISTER_ADMIN = gql `
-  mutation($options: AdminregInput!) {
+export const REGISTER_ADMIN = gql`
+  mutation ($options: AdminregInput!) {
     adminregister(options: $options) {
       admin {
         id
@@ -554,14 +561,24 @@ export const REGISTER_ADMIN = gql `
   }
 `;
 
-export const CREATE_PRODUCT_VARIATION = gql `
- mutation($productId: String!, $price: Float!, $color: String!, $size: String!) {
-  createProductVariation(productId: $productId, price: $price, color: $color, size: $size) {
-    price
-    size
-    color
+export const CREATE_PRODUCT_VARIATION = gql`
+  mutation (
+    $productId: String!
+    $price: Float!
+    $color: String!
+    $size: String!
+  ) {
+    createProductVariation(
+      productId: $productId
+      price: $price
+      color: $color
+      size: $size
+    ) {
+      price
+      size
+      color
+    }
   }
-}
 `;
 
 export const CREATE_ORDER = gql`
@@ -606,7 +623,7 @@ export const CREATE_ORDER = gql`
   }
 `;
 
-export const VERIFY_ADMINCODE = gql `
+export const VERIFY_ADMINCODE = gql`
   mutation {
     adminCode(options: $options) {
       errors {
@@ -646,8 +663,16 @@ export const CLEAR_CART = gql`
 `;
 
 export const ADD_TO_CART = gql`
-  mutation AddToCart($productId: String!, $quantity: Float!, $variationId: String) {
-    addToCart(productId: $productId, quantity: $quantity, variationId: $variationId) {
+  mutation AddToCart(
+    $productId: String!
+    $quantity: Float!
+    $variationId: String
+  ) {
+    addToCart(
+      productId: $productId
+      quantity: $quantity
+      variationId: $variationId
+    ) {
       id
       quantity
       price
@@ -667,20 +692,20 @@ export const ADD_TO_CART = gql`
 `;
 
 export const UPDATE_ADDRESS = gql`
- mutation($input: UpdateUserAddressInput!, $updateUserAddressId: String!) {
-  updateUserAddress(input: $input, id: $updateUserAddressId) {
-    country
-    state
-    city
-    streetAddress
-    streetAddress2
-    zipcode
-    user {
-      id
-      username
+  mutation ($input: UpdateUserAddressInput!, $updateUserAddressId: String!) {
+    updateUserAddress(input: $input, id: $updateUserAddressId) {
+      country
+      state
+      city
+      streetAddress
+      streetAddress2
+      zipcode
+      user {
+        id
+        username
+      }
     }
   }
-}
 `;
 
 export const UPDATE_PRODUCT_IMAGE = gql`
@@ -701,24 +726,28 @@ export const DELETE_PRODUCT_IMAGE = gql`
 
 export const ADD_PRODUCT_IMAGES = gql`
   mutation AddProductImages($productId: String!, $imageUrls: [String!]!) {
-    addProductImages(productId: $productId, variationId: null, imageUrls: $imageUrls)
+    addProductImages(
+      productId: $productId
+      variationId: null
+      imageUrls: $imageUrls
+    )
   }
 `;
 
 export const SET_PRIMARY_PRODUCT_IMAGE = gql`
-mutation SetPrimaryProductImage($imageId: Int!) {
-  setPrimaryProductImage(imageId: $imageId)
-}
+  mutation SetPrimaryProductImage($imageId: Int!) {
+    setPrimaryProductImage(imageId: $imageId)
+  }
 `;
 
 export const MOVE_PRODUCT_IMAGE = gql`
-mutation MoveProductImage($imageId: Int!, $direction: String!) {
-  moveProductImage(imageId: $imageId, direction: $direction)
-}
+  mutation MoveProductImage($imageId: Int!, $direction: String!) {
+    moveProductImage(imageId: $imageId, direction: $direction)
+  }
 `;
 
-export const CREATE_REVIEW = gql `
- mutation($input: ReviewInput!) {
+export const CREATE_REVIEW = gql`
+  mutation ($input: ReviewInput!) {
     createReview(input: $input) {
       id
       comment
@@ -745,7 +774,7 @@ export const DELETE_MULTIPLE_PRODUCTS = gql`
   }
 `;
 
-export const CREATE_DISCOUNT = gql `
+export const CREATE_DISCOUNT = gql`
   mutation CreateDiscount($input: DiscountInput!) {
     createDiscount(input: $input) {
       id
@@ -764,184 +793,199 @@ export const CREATE_DISCOUNT = gql `
   }
 `;
 
-export const UPDATE_DISCOUNT = gql `
- mutation UpdateDiscount($id: ID!, $input: DiscountInput!) {
-  updateDiscount(id: $id, input: $input) {
-    id
-    type
-    value
-    thresholdAmount
-    thresholdQuantity
-    bogoBuy
-    bogoGet
-    bogoDiscount
-    status
-    isActive
+export const UPDATE_DISCOUNT = gql`
+  mutation UpdateDiscount($id: ID!, $input: DiscountInput!) {
+    updateDiscount(id: $id, input: $input) {
+      id
+      type
+      value
+      thresholdAmount
+      thresholdQuantity
+      bogoBuy
+      bogoGet
+      bogoDiscount
+      status
+      isActive
+    }
   }
-}
 `;
 
-export const DELETE_DISCOUNT = gql `
- mutation DeleteDiscount($id: String!) {
-  deleteDiscount(id: $id)
-}
+export const DELETE_DISCOUNT = gql`
+  mutation DeleteDiscount($id: String!) {
+    deleteDiscount(id: $id)
+  }
 `;
 
-export const ACTIVE_DISCOUNT = gql `
+export const ACTIVE_DISCOUNT = gql`
   mutation ActivateDiscount($id: ID!) {
-  activateDiscount(id: $id) {
-    id
-    isActive
-    status
+    activateDiscount(id: $id) {
+      id
+      isActive
+      status
+    }
   }
-}
 `;
 
-export const DEACTIVATE_DISCOUNT = gql `
- mutation DeactivateDiscount($id: String!) {
-  deactivateDiscount(id: $id) {
-    id
-    isActive
-    status
+export const DEACTIVATE_DISCOUNT = gql`
+  mutation DeactivateDiscount($id: String!) {
+    deactivateDiscount(id: $id) {
+      id
+      isActive
+      status
+    }
   }
-}
 `;
 
-export const CREATE_DISCOUNT_PT2 = gql `
- mutation($input: DiscountInput!) {
-  createDiscountpt2(input: $input) {
-    id
-    isActive
-    startDate
-    endDate
-    status
-    bogoBuy
-    bogoDiscount
-    bogoGet
-    category {
+export const CREATE_DISCOUNT_PT2 = gql`
+  mutation ($input: DiscountInput!) {
+    createDiscountpt2(input: $input) {
       id
-      name
-    }
-    company {
-      id
-      cname
-      cname
-    }
-    product {
-      id
-      name
-      price
-    }
-    thresholdAmount
-    thresholdQuantity
-  }
-}
-`;
-
-export const CREATE_SELLER_CATEGORY = gql `
- mutation($input: SellerCatInput!) {
-  createSellerCategory(input: $input) {
-    sellercategories {
-      id
-      name
-      slug
-      createdAt
+      isActive
+      startDate
+      endDate
+      status
+      bogoBuy
+      bogoDiscount
+      bogoGet
+      category {
+        id
+        name
+      }
       company {
         id
         cname
+        cname
+      }
+      product {
+        id
+        name
+        price
+      }
+      thresholdAmount
+      thresholdQuantity
+    }
+  }
+`;
+
+export const CREATE_SELLER_CATEGORY = gql`
+  mutation ($input: SellerCatInput!) {
+    createSellerCategory(input: $input) {
+      sellercategories {
+        id
+        name
+        slug
+        createdAt
+        company {
+          id
+          cname
+        }
       }
     }
   }
-}
 `;
 
-export const APPLY_DISCOUNT_TO_CATEGORY_PRODUCTS = gql `
- mutation($categoryId: String!, $discountId: String!) {
-  applyDiscountonCategory(categoryId: $categoryId, discountId: $discountId) {
-    id
-    category {
+export const APPLY_DISCOUNT_TO_CATEGORY_PRODUCTS = gql`
+  mutation ($categoryId: String!, $discountId: String!) {
+    applyDiscountonCategory(categoryId: $categoryId, discountId: $discountId) {
+      id
+      category {
+        id
+        name
+      }
+      subcategory {
+        id
+        name
+      }
+    }
+  }
+`;
+
+export const FOLLOW_COMPANY = gql`
+  mutation ($companyId: String!) {
+    followCompany(companyId: $companyId)
+  }
+`;
+
+export const UNFOLLOW_COMPANY = gql`
+  mutation ($companyId: String!) {
+    unfollowCompany(companyId: $companyId)
+  }
+`;
+
+export const CREATE_CAMPAIGN = gql`
+  mutation CreateCampaign(
+    $schedule: String!
+    $content: String!
+    $subject: String!
+    $type: String!
+    $name: String!
+  ) {
+    createCampaign(
+      schedule: $schedule
+      content: $content
+      subject: $subject
+      type: $type
+      name: $name
+    ) {
       id
       name
+      company {
+        id
+        cname
+        email
+      }
+      content
+      lastSent
+      recipients
+      schedule
+      status
+      subject
+      type
+      updatedAt
     }
-    subcategory {
+  }
+`;
+
+export const SEND_CAMPAIGN = gql`
+  mutation SendCampaign($campaignId: String!) {
+    sendCampaign(campaignId: $campaignId)
+  }
+`;
+
+export const SEND_COUPON = gql`
+  mutation ($subject: String!, $couponcode: String!) {
+    sendCoupon(subject: $subject, couponcode: $couponcode)
+  }
+`;
+
+export const SEND_MESSAGE = gql`
+  mutation ($input: SendMessageInput!) {
+    sendMessage(input: $input) {
       id
-      name
+      message
+      senderType
+      receiverType
+      createdAt
     }
   }
-}
 `;
 
-export const FOLLOW_COMPANY = gql `
- mutation($companyId: String!) {
-  followCompany(companyId: $companyId)
-}
+export const MARK_MESSAGES_AS_READ = gql`
+  mutation MarkMessagesAsRead(
+    $conversationId: String!
+    $readerType: SenderType!
+  ) {
+    markMessagesAsRead(conversationId: $conversationId, readerType: $readerType)
+  }
 `;
 
-export const UNFOLLOW_COMPANY = gql `
- mutation($companyId: String!) {
-  unfollowCompany(companyId: $companyId)
-}
-`;
-
-export const CREATE_CAMPAIGN = gql `
- mutation CreateCampaign($schedule: String!, $content: String!, $subject: String!, $type: String!, $name: String!) {
-  createCampaign(schedule: $schedule, content: $content, subject: $subject, type: $type, name: $name) {
-    id
-    name
-    company {
+export const DELETE_SELLER_MESSAGES = gql`
+  mutation ($conversationId: String!) {
+    deleteConversation(conversationId: $conversationId) {
       id
-      cname
-      email
     }
-    content
-    lastSent
-    recipients
-    schedule
-    status
-    subject
-    type
-    updatedAt
   }
-}
 `;
-
-export const SEND_CAMPAIGN = gql `
- mutation SendCampaign($campaignId: String!) {
-  sendCampaign(campaignId: $campaignId)
-}
-`;
-
-export const SEND_COUPON = gql `
- mutation($subject: String!, $couponcode: String!) {
-  sendCoupon(subject: $subject, couponcode: $couponcode)
-}
-`;
-
-export const SEND_MESSAGE = gql `
- mutation($input: SendMessageInput!) {
-  sendMessage(input: $input) {
-    id
-    message
-    senderType
-    receiverType
-    createdAt
-  }
-}
-`;
-
-export const MARK_MESSAGES_AS_READ = gql `
- mutation MarkMessagesAsRead($conversationId: String!, $readerType: SenderType!) {
-  markMessagesAsRead(conversationId: $conversationId, readerType: $readerType)
-}
-`;
-
-export const DELETE_SELLER_MESSAGES = gql `
- mutation($conversationId: String!) {
-  deleteConversation(conversationId: $conversationId) {
-    id
-  }
-}
-`; 
 
 export const CREATE_POSTS_WITH_IMAGE = gql`
   mutation CreatePostWithImage($title: String!, $fileBase64: String!) {
@@ -965,105 +1009,113 @@ export const TRACK_COMPANY_VIEW = gql`
   }
 `;
 
-export const GENERATE_INVOICE_BY_ORDER = gql `
- mutation($orderId: String!) {
-  createInvoice(orderId: $orderId) {
-    id
-    items
-    metadata
-    newField
-    order {
+export const GENERATE_INVOICE_BY_ORDER = gql`
+  mutation ($orderId: String!) {
+    createInvoice(orderId: $orderId) {
       id
+      items
+      metadata
+      newField
+      order {
+        id
+      }
+      paidAt
+      seller {
+        id
+        cname
+        contact
+        email
+      }
+      sentAt
+      sequentialNumber
+      status
+      totalAmount
+      updatedAt
+      createdAt
+      currency
+      downloadCount
+      invoiceNumber
+      issuedAt
     }
-    paidAt
-    seller {
-      id
-      cname
-      contact
-      email
-    }
-    sentAt
-    sequentialNumber
-    status
-    totalAmount
-    updatedAt
-    createdAt
-    currency
-    downloadCount
-    invoiceNumber
-    issuedAt
   }
-}
 `;
 
-export const GENERATE_INVOICE_BY_DATE = gql `
- mutation($endDate: DateTimeISO!, $startDate: DateTimeISO!, $sellerId: String!) {
-  generateInvoicesByDate(endDate: $endDate, startDate: $startDate, sellerId: $sellerId)
-}
-`;
-
-export const UPDATE_INVOICE_STATUS = gql `
- mutation($status: String!, $invoiceId: String!) {
-  updateInvoiceStatus(status: $status, invoiceId: $invoiceId) {
-    id
-    status
-    invoiceNumber
+export const GENERATE_INVOICE_BY_DATE = gql`
+  mutation (
+    $endDate: DateTimeISO!
+    $startDate: DateTimeISO!
+    $sellerId: String!
+  ) {
+    generateInvoicesByDate(
+      endDate: $endDate
+      startDate: $startDate
+      sellerId: $sellerId
+    )
   }
-}
 `;
 
-export const RECORD_INVOICE_DOWNLOAD = gql `
- mutation($invoiceId: String!) {
-  recordInvoiceDownload(invoiceId: $invoiceId)
-}
-`;
-
-export const CREATE_PAYPAL_CHECKOUT = gql ` 
- mutation($orderId: String!, $amount: Float!) {
-  createPayPalCheckout(orderId: $orderId, amount: $amount)
-}
-`;
-
-export const CAPTURE_PAYPAL_PAYMENT = gql `
- mutation($paypalOrderId: String!) {
-  capturePayPalPayment(paypalOrderId: $paypalOrderId)
-}
-`;
-
-export const COMPLETE_PAYPAL_PAYMENT = gql `
- mutation($orderId: String!) {
-  completePayPalPayment(orderId: $orderId) {
-    id
-    status
-    subtotal
-    total
-    discount
-    discountBreakdown
-    estimatedDileveryDate
-    createdAt
-    updatedAt
-    items{
+export const UPDATE_INVOICE_STATUS = gql`
+  mutation ($status: String!, $invoiceId: String!) {
+    updateInvoiceStatus(status: $status, invoiceId: $invoiceId) {
       id
-      quantity
-      size
-      price
+      status
+      invoiceNumber
     }
-    user {
-      id
-      username
-    }
-    company {
-      id
-      cname
-    }    
   }
-}
 `;
 
-export const CREATE_CHECKOUT_WITH_PAYPAL = gql `
- mutation {
-  checkoutWithPayPal
-}
+export const RECORD_INVOICE_DOWNLOAD = gql`
+  mutation ($invoiceId: String!) {
+    recordInvoiceDownload(invoiceId: $invoiceId)
+  }
+`;
+
+export const CREATE_PAYPAL_CHECKOUT = gql`
+  mutation ($orderId: String!, $amount: Float!) {
+    createPayPalCheckout(orderId: $orderId, amount: $amount)
+  }
+`;
+
+export const CAPTURE_PAYPAL_PAYMENT = gql`
+  mutation ($paypalOrderId: String!) {
+    capturePayPalPayment(paypalOrderId: $paypalOrderId)
+  }
+`;
+
+export const COMPLETE_PAYPAL_PAYMENT = gql`
+  mutation ($orderId: String!) {
+    completePayPalPayment(orderId: $orderId) {
+      id
+      status
+      subtotal
+      total
+      discount
+      discountBreakdown
+      estimatedDileveryDate
+      createdAt
+      updatedAt
+      items {
+        id
+        quantity
+        size
+        price
+      }
+      user {
+        id
+        username
+      }
+      company {
+        id
+        cname
+      }
+    }
+  }
+`;
+
+export const CREATE_CHECKOUT_WITH_PAYPAL = gql`
+  mutation {
+    checkoutWithPayPal
+  }
 `;
 
 export const CREATE_ORDERR = gql`

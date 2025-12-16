@@ -56,6 +56,8 @@ export default function SellerProductPage() {
   const [sentimentFilter, setSentimentFilter] = useState<'ALL' | ReviewSentiment>('ALL');
 
   const product = data?.productBySlug;
+  console.log("Product from query via dashboard", product);
+
   const reviews = reviewData?.productReviews?.items || [];
   const totalReviews = reviewData?.productReviews?.total || 0;
   const hasMoreReviews = reviewData?.productReviews?.hasMore || false;

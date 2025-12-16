@@ -29,6 +29,13 @@ export const ME_QUERY = gql`
           size
           color
         }
+        images {
+          id
+          url
+          key
+          isPrimary
+          position
+        }
       }
     }
   }
@@ -88,18 +95,19 @@ export const GET_WISHLISTS = gql`
           price
           slug
           averageRating
+          wishlistCount
           reviewCount
-         images {
-  id
-  url
-  key
-  isPrimary
-  position
-}
-            category {
-          id
-          name
-        }
+          images {
+            id
+            url
+            key
+            isPrimary
+            position
+          }
+          category {
+            id
+            name
+          }
         }
         variation {
           id
@@ -111,7 +119,6 @@ export const GET_WISHLISTS = gql`
     }
   }
 `;
-
 
 export const GET_MY_ADDRESSES = gql`
   query MyAddresses {
@@ -138,7 +145,7 @@ export const GET_CATEGORIES = gql`
 `;
 
 export const CATEGORY_BY_SLUG = gql`
-  query($slug: String!) {
+  query ($slug: String!) {
     categoryBySlug(slug: $slug) {
       id
       name
@@ -152,13 +159,14 @@ export const CATEGORY_BY_SLUG = gql`
         averageRating
         soldCount
         material
-       images {
-  id
-  url
-  key
-  isPrimary
-  position
-}
+        wishlistCount
+        images {
+          id
+          url
+          key
+          isPrimary
+          position
+        }
         category {
           name
         }
@@ -190,8 +198,7 @@ export const GET_SUBCATEGORIES = gql`
   }
 `;
 
-
-export const ALL_PRODUCTS_QUERY = gql `
+export const ALL_PRODUCTS_QUERY = gql`
   query {
     allProducts {
       id
@@ -203,6 +210,7 @@ export const ALL_PRODUCTS_QUERY = gql `
       discountedPrice
       createdAt
       reviewCount
+      wishlistCount
       slug
       status
       averageRating
@@ -214,18 +222,18 @@ export const ALL_PRODUCTS_QUERY = gql `
         price
         size
       }
-        images {
-  id
-  url
-  key
-  isPrimary
-  position
-}
+      images {
+        id
+        url
+        key
+        isPrimary
+        position
+      }
     }
   }
 `;
 
-export const ALL_PRODUCTS_QUERY_FOR_ADMIN = gql `
+export const ALL_PRODUCTS_QUERY_FOR_ADMIN = gql`
   query {
     allProductsforadmin {
       id
@@ -238,6 +246,7 @@ export const ALL_PRODUCTS_QUERY_FOR_ADMIN = gql `
       reviewCount
       slug
       status
+      wishlistCount
       averageRating
       category {
         name
@@ -251,19 +260,19 @@ export const ALL_PRODUCTS_QUERY_FOR_ADMIN = gql `
         price
         size
       }
-     images {
-  id
-  url
-  key
-  isPrimary
-  position
-}
+      images {
+        id
+        url
+        key
+        isPrimary
+        position
+      }
     }
   }
 `;
 
 export const GET_COMPANY_BY_ID = gql`
-  query($getCompanyId: String!) {
+  query ($getCompanyId: String!) {
     getCompany(id: $getCompanyId) {
       id
       email
@@ -287,41 +296,45 @@ export const GET_COMPANY_BY_ID = gql`
         averageRating
       }
       reviews {
-      id
-      rating
-      comment
-      createdAt
-      user {
         id
-        username
+        rating
+        comment
+        createdAt
+        user {
+          id
+          username
         }
-      }  
+      }
     }
   }
 `;
 
-export const PAGINATED_COMPANY_REVIEWS = gql `
- query CompanyReviews($id: String!, $limit: Int!, $offset: Int!) {
-  companyReviews(id: $id, limit: $limit, offset: $offset) {
-    items {
-      id
-      comment
-      rating
-      createdAt
-      user {
+export const PAGINATED_COMPANY_REVIEWS = gql`
+  query CompanyReviews($id: String!, $limit: Int!, $offset: Int!) {
+    companyReviews(id: $id, limit: $limit, offset: $offset) {
+      items {
         id
-        username
-        email
+        comment
+        rating
+        createdAt
+        user {
+          id
+          username
+          email
+        }
       }
+      total
+      hasMore
     }
-    total
-    hasMore
   }
-}
 `;
 
 export const UPDATE_COMPANY_STATUS = gql`
-  mutation UpdateCompanyStatus($id: ID!, $status: CompanyStatus!, $statusNote: String) {
+  mutation UpdateCompanyStatus(
+    $id: ID!
+    $status: CompanyStatus!
+    $statusNote: String
+  ) {
     updateCompanyStatus(id: $id, status: $status, statusNote: $statusNote) {
       id
       status
@@ -330,46 +343,46 @@ export const UPDATE_COMPANY_STATUS = gql`
   }
 `;
 
-export const GET_PRODUCT_BY_ID = gql `
- query($productId: String!) {
-  product(id: $productId) {
-    id
-    name
-    soldCount
-    description
-    price
-    size
-    material
-    slug
-    createdAt
-    category {
+export const GET_PRODUCT_BY_ID = gql`
+  query ($productId: String!) {
+    product(id: $productId) {
       id
       name
-    }
-    variations {
-      name
+      soldCount
+      description
       price
       size
+      material
+      slug
+      createdAt
+      category {
+        id
+        name
+      }
+      variations {
+        name
+        price
+        size
+      }
+      averageRating
+      reviewCount
+      reviews {
+        comment
+        rating
+        sentiment
+      }
+      company {
+        cname
+      }
+      images {
+        id
+        url
+        key
+        isPrimary
+        position
+      }
     }
-    averageRating
-    reviewCount
-    reviews {
-      comment
-      rating
-      sentiment
-    }
-    company {
-      cname
-    }
-   images {
-  id
-  url
-  key
-  isPrimary
-  position
-}
   }
-}
 `;
 
 export const GET_PRODUCT_BY_SLUG = gql`
@@ -418,13 +431,14 @@ export const GET_PRODUCT_BY_SLUG = gql`
       signed
       vintage
       wholesale
-     images {
-  id
-  url
-  key
-  isPrimary
-  position
-}
+      wishlistCount
+      images {
+        id
+        url
+        key
+        isPrimary
+        position
+      }
       reviews {
         id
         comment
@@ -432,9 +446,9 @@ export const GET_PRODUCT_BY_SLUG = gql`
         ratingDistribution
         sentiment
         createdAt
+        authorName
         user {
           id
-          username
         }
       }
       variations {
@@ -449,10 +463,9 @@ export const GET_PRODUCT_BY_SLUG = gql`
         name
       }
       company {
-      id
-      cname
-      } 
-       
+        id
+        cname
+      }
     }
   }
 `;
@@ -487,22 +500,22 @@ export const FILTERED_PRODUCTS_QUERY = gql`
         name
       }
       variations {
-      color
-      price
-      size
-      }  
-     images {
-  id
-  url
-  key
-  isPrimary
-  position
-}
+        color
+        price
+        size
+      }
+      images {
+        id
+        url
+        key
+        isPrimary
+        position
+      }
     }
   }
 `;
 
-export const GET_MATERIALS = gql `
+export const GET_MATERIALS = gql`
   query {
     getMaterials {
       material
@@ -510,52 +523,53 @@ export const GET_MATERIALS = gql `
   }
 `;
 
-export const GET_UNIQUE_SIZES = gql `
+export const GET_UNIQUE_SIZES = gql`
   query {
     getUniqueSizes
   }
 `;
 
-export const GET_SELLER_ORDERS = gql `
- query {
-  getSellerOrders {
-    id
-    createdAt
-    status
-    discount
-    discountBreakdown
-    total
-    items {
+export const GET_SELLER_ORDERS = gql`
+  query {
+    getSellerOrders {
       id
       createdAt
-      price
-      quantity
-      product {
-        name
+      status
+      discount
+      discountBreakdown
+      total
+      items {
+        id
+        createdAt
         price
-        company {
-         id
-         cname
-         email
-         location
-         contact
+        quantity
+        product {
+          name
+          price
+          company {
+            id
+            cname
+            email
+            location
+            contact
+          }
         }
       }
-    } user {
-      username
-      email
-      contact
-      addresses {
-        country
-        state
-        city
-        streetAddress
-        streetAddress2
-        zipcode
+      user {
+        username
+        email
+        contact
+        addresses {
+          country
+          state
+          city
+          streetAddress
+          streetAddress2
+          zipcode
         }
+      }
     }
   }
-}
 `;
 
 export const PRODUCT_REVIEWS_QUERY = gql`
@@ -633,138 +647,138 @@ export const GET_EVERY_ORDER_BY_USER = gql`
   }
 `;
 
-export const GET_SIMILAR_PRODUCTS = gql `
+export const GET_SIMILAR_PRODUCTS = gql`
   query GetSimilarProducts($productId: String!, $category: String!) {
-  getSimilarProducts(productId: $productId, category: $category) {
-    category {
-      name
-    }
-    id  
-    name
-    slug
-    soldCount
-    price
-    discountedPrice
-    averageRating
-    reviewCount
-    description
-    material
- images {
-  id
-  url
-  key
-  isPrimary
-  position
-}
-  }
-}
-`;
-
-export const GET_USERS = gql `
- query {
-   users {
-    id
-    username
-    email
-    contact
-    isEmailVerified
-    createdAt
-    updatedAt
-  }
-}
-`;
-
-export const GET_USER_RATING = gql `
- query {
-  userReviews {
-    product {
-      name
-    }
-    rating
-  }
-}
-`;
-
-export const GET_COMPANY_USER_RATING = gql `
- query {
-  userReviewCompany {
-    id
-    rating
-    comment
-    company {
-      cname
-    }
-    createdAt
-  }
-}
-`;
-
-export const GET_COMPANIES = gql `
- query {
-  getCompanies {
-    id
-    cname
-    username
-    contact
-    email
-    location
-    createdAt
-    products {
+    getSimilarProducts(productId: $productId, category: $category) {
+      category {
+        name
+      }
       id
       name
+      slug
+      soldCount
       price
-      description
-      material
-      size
+      discountedPrice
       averageRating
       reviewCount
+      description
+      material
+      images {
+        id
+        url
+        key
+        isPrimary
+        position
+      }
     }
   }
-}
 `;
 
-export const GET_CURRENTSELLER_PRODUCTS = gql `
- query {
-  myProducts {
-    id
-    name
-    description
-    price
-    size
-    stock
-    weight
-    material
-    slug
-    variations {
-    id
-    color
-    stock
-    size
-    price
+export const GET_USERS = gql`
+  query {
+    users {
+      id
+      username
+      email
+      contact
+      isEmailVerified
+      createdAt
+      updatedAt
     }
-    createdAt
-    reviewCount
-    averageRating
-    reviews {
-      comment
-      sentiment
+  }
+`;
+
+export const GET_USER_RATING = gql`
+  query {
+    userReviews {
+      product {
+        name
+      }
       rating
     }
-    company {
-      cname
-    }
-     images {
-  id
-  url
-  key
-  isPrimary
-  position
-}
   }
-}
 `;
 
-export const GET_ADMIN = gql `
+export const GET_COMPANY_USER_RATING = gql`
+  query {
+    userReviewCompany {
+      id
+      rating
+      comment
+      company {
+        cname
+      }
+      createdAt
+    }
+  }
+`;
+
+export const GET_COMPANIES = gql`
+  query {
+    getCompanies {
+      id
+      cname
+      username
+      contact
+      email
+      location
+      createdAt
+      products {
+        id
+        name
+        price
+        description
+        material
+        size
+        averageRating
+        reviewCount
+      }
+    }
+  }
+`;
+
+export const GET_CURRENTSELLER_PRODUCTS = gql`
+  query {
+    myProducts {
+      id
+      name
+      description
+      price
+      size
+      stock
+      weight
+      material
+      slug
+      variations {
+        id
+        color
+        stock
+        size
+        price
+      }
+      createdAt
+      reviewCount
+      averageRating
+      reviews {
+        comment
+        sentiment
+        rating
+      }
+      company {
+        cname
+      }
+      images {
+        id
+        url
+        key
+        isPrimary
+        position
+      }
+    }
+  }
+`;
+
+export const GET_ADMIN = gql`
   query {
     getadmin {
       id
@@ -775,64 +789,64 @@ export const GET_ADMIN = gql `
   }
 `;
 
-export const GET_PAGINATION = gql `
- query PaginatedProducts($limit: Int!, $cursor: String) {
-  paginatedProducts(limit: $limit, cursor: $cursor) {
-    products {
-      id
-      name
-      createdAt
-      description
-      material
-      soldCount
-      averageRating
-      reviewCount
-      reviews {
-        comment
+export const GET_PAGINATION = gql`
+  query PaginatedProducts($limit: Int!, $cursor: String) {
+    paginatedProducts(limit: $limit, cursor: $cursor) {
+      products {
+        id
+        name
+        createdAt
+        description
+        material
+        soldCount
+        averageRating
+        reviewCount
+        reviews {
+          comment
+        }
+        size
+        price
       }
-      size
-      price
+      hasMore
+      nextCursor
     }
-    hasMore
-    nextCursor
   }
-}
 `;
 
 export const SELLER_PRODUCT_PAGINATION = gql`
- query PaginatedMyProducts($limit: Int!, $offset: Int!) {
-  paginatedMyProducts(limit: $limit, offset: $offset) {
-    products {
-      id
-      name
-      createdAt
-      description
-      size
-      stock
-      slug
-      price
-      reviewCount
-      soldCount
-      averageRating
-      reviews {
-      comment
-      }
-      category {
+  query PaginatedMyProducts($limit: Int!, $offset: Int!) {
+    paginatedMyProducts(limit: $limit, offset: $offset) {
+      products {
         id
         name
+        createdAt
+        description
+        size
+        stock
+        slug
+        price
+        reviewCount
+        soldCount
+        averageRating
+        reviews {
+          comment
+        }
+        category {
+          id
+          name
+        }
+        images {
+          id
+          url
+          key
+          isPrimary
+          position
+        }
       }
-     images {
-  id
-  url
-  key
-  isPrimary
-  position
-}
+      total
+      hasMore
     }
-    total
-    hasMore
   }
-}
 `;
 
 export const GET_CART_ITEMS = gql`
@@ -847,12 +861,12 @@ export const GET_CART_ITEMS = gql`
         description
         material
         images {
-  id
-  url
-  key
-  isPrimary
-  position
-}
+          id
+          url
+          key
+          isPrimary
+          position
+        }
       }
       variation {
         id
@@ -860,7 +874,7 @@ export const GET_CART_ITEMS = gql`
         color
         price
       }
-        image{
+      image {
         id
         key
         url
@@ -869,13 +883,13 @@ export const GET_CART_ITEMS = gql`
   }
 `;
 
-export const GET_CART_ITEMS_BY_USERS = gql `
- query {
-  getCartItemsbyusers {
-    id
-    quantity
+export const GET_CART_ITEMS_BY_USERS = gql`
+  query {
+    getCartItemsbyusers {
+      id
+      quantity
+    }
   }
-}
 `;
 
 export const GET_CART = gql`
@@ -886,17 +900,17 @@ export const GET_CART = gql`
       updatedAt
       total
       user {
-      id
-      username
-      email
-      addresses {
-      country
-      state
-      city
-      streetAddress
-      streetAddress2
-      zipcode
-      }
+        id
+        username
+        email
+        addresses {
+          country
+          state
+          city
+          streetAddress
+          streetAddress2
+          zipcode
+        }
       }
       items {
         id
@@ -918,7 +932,7 @@ export const GET_CART = gql`
   }
 `;
 
-export const GET_PRODUCT_REVIEWS = gql `
+export const GET_PRODUCT_REVIEWS = gql`
   query ProductReviews($productId: String!, $limit: Int!, $offset: Int!) {
     productReviews(productId: $productId, limit: $limit, offset: $offset) {
       items {
@@ -937,48 +951,48 @@ export const GET_PRODUCT_REVIEWS = gql `
   }
 `;
 
-export const GET_SELLER_COUPONS = gql `
- query {
-  getCompanyCoupons {
-    id
-    isPublic
-    code
-    startDate
-    endDate
-    currentUsage
-    updatedAt
-    discountPercentage
-    usages {
+export const GET_SELLER_COUPONS = gql`
+  query {
+    getCompanyCoupons {
       id
-      orderId
-      usedAt
-      userId
-    }
-    company {
-      id
-      cname
+      isPublic
+      code
+      startDate
+      endDate
+      currentUsage
+      updatedAt
+      discountPercentage
+      usages {
+        id
+        orderId
+        usedAt
+        userId
+      }
+      company {
+        id
+        cname
+      }
     }
   }
-}
 `;
 
 export const GET_SELLER_CATEGORIES = gql`
- query {
-  getsellerCategories {
-    id
-    name
-    slug
-    company {
+  query {
+    getsellerCategories {
       id
-      cname
+      name
+      slug
+      company {
+        id
+        cname
+      }
+      createdAt
     }
-    createdAt
   }
-}
 `;
 
-export const GET_PRODUCTS_BY_CATEGORY = gql `
-  query($name: String!) {
+export const GET_PRODUCTS_BY_CATEGORY = gql`
+  query ($name: String!) {
     productsByCategory(name: $name) {
       id
       name
@@ -989,21 +1003,21 @@ export const GET_PRODUCTS_BY_CATEGORY = gql `
       reviewCount
       price
       material
-        images {
-  id
-  url
-  key
-  isPrimary
-  position
-}
+      images {
+        id
+        url
+        key
+        isPrimary
+        position
+      }
       reviews {
-      rating
+        rating
       }
     }
   }
 `;
 
-export const GET_TOP_RATED_PRODUCTS = gql `
+export const GET_TOP_RATED_PRODUCTS = gql`
   query TopRatedProducts($limit: Int) {
     topRatedProducts(limit: $limit) {
       id
@@ -1016,6 +1030,7 @@ export const GET_TOP_RATED_PRODUCTS = gql `
       reviewCount
       price
       discountedPrice
+      wishlistCount
       category {
         name
         slug
@@ -1030,57 +1045,63 @@ export const GET_TOP_RATED_PRODUCTS = gql `
       reviews {
         rating
       }
-     images {
-  id
-  url
-  key
-  isPrimary
-  position
-}
+      images {
+        id
+        url
+        key
+        isPrimary
+        position
+      }
     }
   }
 `;
 
-export const GET_ALL_DISCOUNTS = gql `
- query {
-  getAllDiscount {
-    id
-    isActive
-    startDate
-    endDate
-    type
-    value
-    product {
+export const GET_ALL_DISCOUNTS = gql`
+  query {
+    getAllDiscount {
       id
-      name
+      isActive
+      startDate
+      endDate
+      type
+      value
+      product {
+        id
+        name
+      }
     }
   }
-}
 `;
 
-export const GET_DISCOUNT_BY_ID = gql `
- query GetDiscount($id: String!) {
-  discount(id: $id) {
-    id
-    type
-    value
-    thresholdAmount
-    thresholdQuantity
-    bogoBuy
-    bogoGet
-    bogoDiscount
-    status
-    isActive
-    startDate
-    endDate
-    product { id name }
-    category { id name }
+export const GET_DISCOUNT_BY_ID = gql`
+  query GetDiscount($id: String!) {
+    discount(id: $id) {
+      id
+      type
+      value
+      thresholdAmount
+      thresholdQuantity
+      bogoBuy
+      bogoGet
+      bogoDiscount
+      status
+      isActive
+      startDate
+      endDate
+      product {
+        id
+        name
+      }
+      category {
+        id
+        name
+      }
+    }
   }
-}
 `;
 
-export const GET_COMPANY_DISCOUNTS = gql `
-  query{
+export const GET_COMPANY_DISCOUNTS = gql`
+  query {
     getSellerDiscounts {
       id
       startDate
@@ -1112,9 +1133,9 @@ export const GET_COMPANY_DISCOUNTS = gql `
 `;
 
 export const DISCOUNTS_BY_COMPANY = gql`
- query($companyId: String!){
-  discountsByCompany(companyId: $companyId) {
-    id
+  query ($companyId: String!) {
+    discountsByCompany(companyId: $companyId) {
+      id
       type
       value
       thresholdAmount
@@ -1126,28 +1147,28 @@ export const DISCOUNTS_BY_COMPANY = gql`
       endDate
       status
       isActive
+    }
   }
-}
 `;
 
-export const GET_COMPANY_FOLLOWERS = gql `
- query($companyId: String!) {
-  companyFollowers(companyId: $companyId) {
-    id
-    username
-    country
-    createdAt
+export const GET_COMPANY_FOLLOWERS = gql`
+  query ($companyId: String!) {
+    companyFollowers(companyId: $companyId) {
+      id
+      username
+      country
+      createdAt
+    }
   }
-}
 `;
 
-export const GET_USER_COMPANIES = gql `
- query {
-  followedCompanies {
-    id
-    cname
+export const GET_USER_COMPANIES = gql`
+  query {
+    followedCompanies {
+      id
+      cname
+    }
   }
-}
 `;
 
 export const GET_CAMPAIGNS = gql`
@@ -1168,76 +1189,76 @@ export const GET_CAMPAIGNS = gql`
   }
 `;
 
-export const GET_CONVERSATION = gql `
- query($conversationId: String!) {
-  getConversation(conversationId: $conversationId) {
-    id
-    createdAt
-    messages {
+export const GET_CONVERSATION = gql`
+  query ($conversationId: String!) {
+    getConversation(conversationId: $conversationId) {
       id
-      message
       createdAt
-      senderType
-      receiverType
-    }
-    company {
-      id
-      cname
-    }
-    user {
-      id
-      username
+      messages {
+        id
+        message
+        createdAt
+        senderType
+        receiverType
+      }
+      company {
+        id
+        cname
+      }
+      user {
+        id
+        username
+      }
     }
   }
-}
 `;
 
 export const GET_SELLER_CONVO = gql`
-  query($companyId: String!) {
-  getAllConversationsForSeller(companyId: $companyId) {
-    id
-    createdAt
-    messages {
+  query ($companyId: String!) {
+    getAllConversationsForSeller(companyId: $companyId) {
       id
-      message
       createdAt
-      receiverType
-      senderType
-    }
-    user {
-      id
-      username
-    }
-    company {
-      id
-      cname
+      messages {
+        id
+        message
+        createdAt
+        receiverType
+        senderType
+      }
+      user {
+        id
+        username
+      }
+      company {
+        id
+        cname
+      }
     }
   }
-} 
 `;
 
-export const GET_USER_CONVO = gql `
- query($userId: String!) {
-  getAllConversationsForUser(userId: $userId) {
-    id
-    createdAt
-    messages {
+export const GET_USER_CONVO = gql`
+  query ($userId: String!) {
+    getAllConversationsForUser(userId: $userId) {
       id
-      message
       createdAt
-      senderType
-      receiverType
-    }
-    user {
-      id
-      username
-    }
-    company {
-      id
-      cname
+      messages {
+        id
+        message
+        createdAt
+        senderType
+        receiverType
+      }
+      user {
+        id
+        username
+      }
+      company {
+        id
+        cname
+      }
     }
   }
-}
 `;
 
 export const GET_COMPANY_VIEWS = gql`
@@ -1256,50 +1277,10 @@ export const GET_RECENT_VIEWERS = gql`
   }
 `;
 
-export const GET_INVOICE = gql `
- query ($invoiceId: String!) {
-  getInvoice(invoiceId: $invoiceId) {
-    id
-    items
-    metadata
-    newField
-    order {
+export const GET_INVOICE = gql`
+  query ($invoiceId: String!) {
+    getInvoice(invoiceId: $invoiceId) {
       id
-    }
-    paidAt
-    seller {
-      id
-      cname
-      contact
-      email
-    }
-    sentAt
-    sequentialNumber
-    status
-    totalAmount
-    updatedAt
-    createdAt
-    currency
-    downloadCount
-    invoiceNumber
-    issuedAt
-  }
-}
-`;
-
-export const GET_COMPANY_INVOICES = gql`
- query {
-  getCompanyInvoices {
-    page
-    total
-    totalPages
-    invoices {
-      id
-      createdAt
-      currency
-      downloadCount
-      invoiceNumber
-      issuedAt
       items
       metadata
       newField
@@ -1318,13 +1299,53 @@ export const GET_COMPANY_INVOICES = gql`
       status
       totalAmount
       updatedAt
+      createdAt
+      currency
+      downloadCount
+      invoiceNumber
+      issuedAt
     }
   }
-}
 `;
 
-export const GET_PAYPAL_ORDER_STATUS = gql `
- query($paypalOrderId: String!) {
-  getPayPalOrderStatus(paypalOrderId: $paypalOrderId)
-}
+export const GET_COMPANY_INVOICES = gql`
+  query {
+    getCompanyInvoices {
+      page
+      total
+      totalPages
+      invoices {
+        id
+        createdAt
+        currency
+        downloadCount
+        invoiceNumber
+        issuedAt
+        items
+        metadata
+        newField
+        order {
+          id
+        }
+        paidAt
+        seller {
+          id
+          cname
+          contact
+          email
+        }
+        sentAt
+        sequentialNumber
+        status
+        totalAmount
+        updatedAt
+      }
+    }
+  }
+`;
+
+export const GET_PAYPAL_ORDER_STATUS = gql`
+  query ($paypalOrderId: String!) {
+    getPayPalOrderStatus(paypalOrderId: $paypalOrderId)
+  }
 `;

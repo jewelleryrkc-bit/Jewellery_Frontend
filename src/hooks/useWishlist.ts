@@ -1,8 +1,10 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/no-unused-vars */
 "use client";
 
 import { useQuery, useMutation, gql, ApolloCache } from "@apollo/client";
 import toast from "react-hot-toast";
-import { GET_WISHLISTS } from "../graphql/queries";
+import { GET_WISHLISTS,ALL_PRODUCTS_QUERY } from "../graphql/queries";
 import { TOGGLE_WISHLIST } from "../graphql/mutations";
 import { WishlistItem, Product } from "../types/type";
 
@@ -23,13 +25,14 @@ export const PRODUCT_FRAGMENT = gql`
     description
     averageRating
     reviewCount
-   images {
-  id
-  url
-  key
-  isPrimary
-  position
-}
+    wishlistCount
+    images {
+      id
+      url
+      key
+      isPrimary
+      position
+    }
   }
 `;
 
@@ -44,88 +47,27 @@ export const useWishlist = () => {
   const isInWishlist = (productId: string) =>
     wishlistItems.some((item) => item.product.id === productId);
 
-  const toggleWishlist = async (productId: string, productName: string) => {
-    try {
-      const alreadyInWishlist = isInWishlist(productId);
+ const toggleWishlist = async (product: Product) => {
+  try {
+    await toggleWishlistMutation({
+      variables: { productId: product.id, variationId: null },
+      refetchQueries: [
+       { query: GET_WISHLISTS },
+    { query: ALL_PRODUCTS_QUERY }, // Add other product list queries
+      ],
+    });
+    
+    toast.success(
+      isInWishlist(product.id)
+        ? `${product.name} removed from wishlist`
+        : `${product.name} added to wishlist`
+    );
+  } catch (err) {
+    console.error(err);
+    toast.error("Failed to update wishlist");
+  }
+};
 
-      const productFromCache = client.readFragment<Product>({
-        id: `Product:${productId}`,
-        fragment: PRODUCT_FRAGMENT,
-      });
-
-      if (!productFromCache) {
-        toast.error("Product data not found in cache");
-        return;
-      }
-
-      const optimisticItem: WishlistItem = {
-        __typename: "WishlistItem",
-        id: `temp-${productId}`,
-        price: productFromCache.price,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-        product: {
-          ...productFromCache,
-          __typename: "Product",
-        },
-        variation: null,
-      };
-
-      await toggleWishlistMutation({
-        variables: { productId },
-
-        optimisticResponse: {
-          __typename: "Mutation",
-          toggleWishlist: optimisticItem,
-        },
-
-        update: (cache: ApolloCache<GetWishlistData>) => {
-          const existing = cache.readQuery<GetWishlistData>({
-            query: GET_WISHLISTS,
-          });
-          if (!existing) return;
-
-          let updatedItems: WishlistItem[];
-
-          if (alreadyInWishlist) {
-            updatedItems = existing.getWishlist.items.filter(
-              (i) => i.product.id !== productId
-            );
-          } else {
-            updatedItems = [...existing.getWishlist.items, optimisticItem];
-          }
-
-          cache.writeQuery({
-            query: GET_WISHLISTS,
-            data: {
-              getWishlist: {
-                ...existing.getWishlist,
-                items: updatedItems,
-              },
-            },
-          });
-        },
-      });
-
-      // NOW toast will work
-      //   toast.success(
-      //     alreadyInWishlist
-      //       ? `${productName} removed from wishlist`
-      //       : `${productName} added to wishlist`
-      //   );
-      //   console.log("check");
-      const result = toast.success(
-        alreadyInWishlist
-          ? `${productName} removed from wishlist`
-          : `${productName} added to wishlist`
-      );
-
-      console.log("Toast result:", result);
-    } catch (err) {
-      console.error(err);
-      toast.error("Failed to update wishlist");
-    }
-  };
 
   return {
     wishlistItems,

@@ -37,26 +37,30 @@ export default function TopRatedProducts() {
               className="group relative bg-white rounded-xl border border-gray-100 shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden"
             >
               {/* Wishlist Button (same logic as category page) */}
-              <button
-                onClick={(e) => {
-                  e.preventDefault();
-                  toggleWishlist(product.id, product.name);
-                }}
-                className="absolute top-3 right-3 z-10 p-2 rounded-full bg-white/90 hover:bg-white transition-all shadow-sm"
-                aria-label={
-                  isInWishlist(product.id)
-                    ? "Remove from wishlist"
-                    : "Add to wishlist"
-                }
-              >
-                <HeartIcon
-                  className={`h-4 w-4 ${
-                    isInWishlist(product.id)
-                      ? "text-red-500 fill-red-500 hover:text-red-600"
-                      : "text-gray-400 hover:text-red-500"
-                  } transition-colors`}
-                />
-              </button>
+            <button
+  onClick={(e) => {
+    e.preventDefault();
+toggleWishlist(product);
+  }}
+  className="absolute top-3 right-3 z-10 p-2 rounded-full bg-white/90 hover:bg-white transition-all shadow-sm flex items-center gap-1"
+  aria-label={
+    isInWishlist(product.id)
+      ? "Remove from wishlist"
+      : "Add to wishlist"
+  }
+>
+  <HeartIcon
+    className={`h-4 w-4 ${
+      isInWishlist(product.id)
+        ? "text-red-500 fill-red-500 hover:text-red-600"
+        : "text-gray-400 hover:text-red-500"
+    } transition-colors`}
+  />
+  <span className="text-[10px] text-gray-700">
+    {product.wishlistCount ?? 0}
+  </span>
+</button>
+
 
               {/* Product Image */}
               <Link href={`/products/${product.slug}`} className="block">

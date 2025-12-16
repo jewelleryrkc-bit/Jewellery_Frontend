@@ -1,4 +1,4 @@
-/* eslint-disable @next/next/no-img-element */
+
 /* eslint-disable react/no-unescaped-entities */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
@@ -87,6 +87,8 @@ export default function ProductPage() {
   });
 
   const product = data?.productBySlug;
+  console.log("Product from query via product page", product);
+
   const productCategory = categories.find(
     (cat: { id: any }) => cat.id === product?.category?.id
   );
@@ -209,6 +211,7 @@ export default function ProductPage() {
   };
 
   const displayedPrice = selectedVariation?.price ?? product.price;
+  
 
   const productImages: { id: string; src: string }[] =
     product.images?.length > 0
@@ -285,36 +288,68 @@ export default function ProductPage() {
           <div className="bg-white rounded-xl shadow-sm overflow-hidden">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 p-6">
               {/* Product Images */}
-              <div className="space-y-4">
-                <div className="relative aspect-square bg-gray-100 rounded-lg overflow-hidden">
-                  <Image
-                    src={productImages[selectedImage].src}
-                    alt={product.name}
-                    fill
-                    className="object-contain"
-                    sizes="(max-width: 1024px) 100vw, 50vw"
-                  />
-                </div>
-                <div className="grid grid-cols-4 gap-3">
-                  {productImages.map((image, index) => (
-                    <button
-                      key={image.id}
-                      onClick={() => setSelectedImage(index)}
-                      className={`aspect-square bg-gray-100 rounded-md overflow-hidden border-2 ${
-                        selectedImage === index
-                          ? "border-blue-500"
-                          : "border-transparent"
-                      }`}
-                    >
-                      <img
-                        src={image.src}
-                        alt={`Product view ${index + 1}`}
-                        className="w-full h-full object-cover"
-                      />
-                    </button>
-                  ))}
-                </div>
-              </div>
+ <div className="space-y-4">
+  {/* Shadow card slightly bigger than image */}
+  <div className="relative bg-gray-100 rounded-xl shadow-lg p-4">
+    {/* ❤️ wishlist button */}
+    <button
+      onClick={(e) => {
+        e.preventDefault();
+       toggleWishlist(product);
+      }}
+      className="absolute top-3 right-3 z-10 p-2 rounded-full bg-white/90 hover:bg-white shadow"
+      aria-label={
+        isInWishlist(product.id)
+          ? "Remove from wishlist"
+          : "Add to wishlist"
+      }
+    >
+      <HeartIcon
+        className={`h-5 w-5 ${
+          isInWishlist(product.id)
+            ? "text-red-500 fill-red-500"
+            : "text-gray-400"
+        }`}
+      />
+      <span className="ml-1 text-xs text-gray-700">
+        {product.wishlistCount ?? 0}
+      </span>
+    </button>
+
+    <div className="relative mx-auto max-w-xl aspect-[4/3]">
+      <Image
+        src={productImages[selectedImage].src}
+        alt={product.name}
+        fill
+        className="object-cover"
+        sizes="(max-width: 1024px) 100vw, 50vw"
+      />
+    </div>
+  </div>
+
+  {/* Thumbnails */}
+  <div className="grid grid-cols-4 gap-3">
+    {productImages.map((image, index) => (
+      <button
+        key={image.id}
+        onClick={() => setSelectedImage(index)}
+        className={`relative aspect-square bg-gray-100 rounded-md overflow-hidden border-2 ${
+          selectedImage === index ? "border-blue-500" : "border-transparent"
+        }`}
+      >
+        <Image
+          src={image.src}
+          alt={`Product view ${index + 1}`}
+          fill
+          className="object-cover"
+          sizes="(max-width: 640px) 25vw, (max-width: 1024px) 15vw, 10vw"
+        />
+      </button>
+    ))}
+  </div>
+</div>
+
+
 
               {/* Product Info */}
               <div className="py-2">
@@ -494,7 +529,7 @@ export default function ProductPage() {
                     <button
                       onClick={(e) => {
                         e.preventDefault();
-                        toggleWishlist(product.id, product.name);
+                        toggleWishlist(product);
                       }}
                       className={`flex items-center justify-center px-6 py-4 rounded-full transition-all duration-300 shadow-md font-medium w-full sm:w-auto
                       ${
@@ -1154,29 +1189,30 @@ export default function ProductPage() {
                             </span>
                           )}
                         </div>
-                        <button
-                          onClick={(e) => {
-                            e.preventDefault();
-                            toggleWishlist(
-                              similarProduct.id,
-                              similarProduct.name
-                            );
-                          }}
-                          className="absolute top-3 right-3 z-10 p-2 rounded-full bg-white/90 hover:bg-white transition-all shadow-sm"
-                          aria-label={
-                            isInWishlist(similarProduct.id)
-                              ? "Remove from wishlist"
-                              : "Add to wishlist"
-                          }
-                        >
-                          <HeartIcon
-                            className={`h-4 w-4 ${
-                              isInWishlist(similarProduct.id)
-                                ? "text-red-500 fill-red-500 hover:text-red-600"
-                                : "text-gray-400 hover:text-red-500"
-                            } transition-colors`}
-                          />
-                        </button>
+                   <button
+  onClick={(e) => {
+    e.preventDefault();
+   toggleWishlist(product);
+  }}
+  className="absolute top-3 right-3 z-10 p-2 rounded-full bg-white/90 hover:bg-white transition-all shadow-sm flex items-center gap-1"
+  aria-label={
+    isInWishlist(product.id)
+      ? "Remove from wishlist"
+      : "Add to wishlist"
+  }
+>
+  <HeartIcon
+    className={`h-4 w-4 ${
+      isInWishlist(product.id)
+        ? "text-red-500 fill-red-500 hover:text-red-600"
+        : "text-gray-400 hover:text-red-500"
+    } transition-colors`}
+  />
+  <span className="text-[10px] text-gray-700">
+    {product.wishlistCount ?? 0}
+  </span>
+</button>
+
                       </div>
                       <div className="p-4">
                         <div className="flex justify-between items-start">

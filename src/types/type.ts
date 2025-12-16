@@ -22,6 +22,7 @@ export interface Product {
   material?: string;
   averageRating?: string;
   reviewCount?: number;
+   wishlistCount?: number;
   images?: ProductImage[]; 
   __typename?: string;
   category?: {
