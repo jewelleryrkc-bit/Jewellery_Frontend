@@ -515,6 +515,51 @@ export const REMOVE_WISHLIST_ITEM = gql`
   }
 `;
 
+export const REMOVE_FROM_CART = gql`
+  mutation RemoveFromCart($itemId: ID!) {
+    removeFromCart(itemId: $itemId) {
+      id
+      total
+      subtotal
+      discountAmount
+
+      # discountCoupon is an object → select fields:
+      discountCoupon {
+        id
+        code
+        discountPercentage
+      }
+
+      items {
+        id
+        quantity
+        price
+        size
+        product {
+          id
+          name
+          slug
+
+          # Product has images[], not image
+          images {
+            url
+            isPrimary
+          }
+
+          # brand is a String in GET_PRODUCT_BY_SLUG → no subfields
+          brand
+        }
+        variation {
+          id
+          size
+          price
+        }
+      }
+    }
+  }
+`;
+
+
 export const UPDATE_ORDER_STATUS = gql`
   mutation UpdateOrderStatus($orderId: String!, $status: OrderStatus!) {
     updateOrderStatus(orderId: $orderId, status: $status) {
@@ -640,14 +685,14 @@ export const VERIFY_ADMINCODE = gql`
   }
 `;
 
-export const REMOVE_FROM_CART = gql`
-  mutation RemoveFromCart($itemId: ID!) {
-    removeFromCart(itemId: $itemId)
-  }
-`;
+// export const REMOVE_FROM_CART = gql`
+//   mutation RemoveFromCart($itemId: ID!) {
+//     removeFromCart(itemId: $itemId)
+//   }
+// `;
 
 export const UPDATE_CART_ITEM = gql`
-  mutation UpdateCartItem($itemId: String!, $quantity: Int!) {
+  mutation UpdateCartItem($itemId: ID!, $quantity: Float!) {
     updateCartItem(itemId: $itemId, quantity: $quantity) {
       id
       quantity
@@ -655,6 +700,8 @@ export const UPDATE_CART_ITEM = gql`
     }
   }
 `;
+
+
 
 export const CLEAR_CART = gql`
   mutation ClearCart {

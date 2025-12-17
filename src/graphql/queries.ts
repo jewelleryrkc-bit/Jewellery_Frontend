@@ -922,6 +922,12 @@ export const GET_CART = gql`
           id
           name
           slug
+          price
+          brand
+          images {
+            url
+            isPrimary
+          }
         }
         variation {
           id
