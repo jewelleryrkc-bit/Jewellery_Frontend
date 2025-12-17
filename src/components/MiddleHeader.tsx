@@ -30,6 +30,8 @@ import {
 } from "../graphql/queries";
 import { motion, AnimatePresence } from "framer-motion";
 import { UrlObject } from "url";
+import { useWishlist } from "../hooks/useWishlist";
+import { useCart } from "../hooks/useCart";
 
 export default function MiddleHeader() {
   const [search, setSearch] = useState("");
@@ -43,6 +45,11 @@ export default function MiddleHeader() {
   // Auto-changing placeholder state
   const [placeholderIndex, setPlaceholderIndex] = useState(0);
   const [placeholderText, setPlaceholderText] = useState("");
+
+  const { wishlistItems } = useWishlist();
+  const wishlistCount = wishlistItems.length;
+
+  const { itemCount: cartCount } = useCart();
 
   // Fetch categories and companies
   const { data: categoriesData } = useQuery(GET_PARENT_CATEGORIES);
@@ -297,17 +304,40 @@ export default function MiddleHeader() {
             {/* Icons with consistent spacing */}
             <div className="flex items-center gap-1">
               <Link
-                href="/wishlist"
-                className="p-1.5 text-gray-700 hover:text-primary-600"
-              >
-                <Heart className="w-5 h-5" />
-              </Link>
+        href="/wishlist"
+        className="relative inline-flex items-center justify-center
+                   p-1.5 text-gray-700 hover:text-primary-600 transition-colors"
+      >
+        <Heart className="w-5 h-5" />
+
+        {wishlistCount > 0 && (
+          <span
+            className="absolute -top-1 -right-1 min-w-[16px] h-4
+                       px-1.5 rounded-full bg-red-500 text-white
+                       text-[10px] leading-4 font-medium
+                       flex items-center justify-center shadow-sm"
+          >
+            {wishlistCount}
+          </span>
+        )}
+      </Link>
               <Link
-                href="/cart"
-                className="p-1.5 text-gray-700 hover:text-primary-600"
-              >
-                <ShoppingCart className="w-5 h-5" />
-              </Link>
+    href="/cart"
+    className="relative inline-flex items-center justify-center
+               p-1.5 text-gray-700 hover:text-primary-600 transition-colors"
+  >
+    <ShoppingCart className="w-5 h-5" />
+    {cartCount > 0 && (
+      <span
+        className="absolute -top-1 -right-1 min-w-[16px] h-4
+                   px-1.5 rounded-full bg-red-500 text-white
+                   text-[10px] leading-4 font-medium
+                   flex items-center justify-center shadow-sm"
+      >
+        {cartCount}
+      </span>
+    )}
+  </Link>
               <Link
                 href="/messages"
                 className="p-1.5 text-gray-700 hover:text-primary-600"
