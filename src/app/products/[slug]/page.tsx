@@ -12,6 +12,7 @@ import {
   GET_SIMILAR_PRODUCTS,
   PRODUCT_REVIEWS_QUERY,
   GET_USER_RATING,
+  GET_CART,
 } from "../../../graphql/queries";
 import { ADD_TO_CART, CREATE_REVIEW } from "../../../graphql/mutations";
 import Head from "next/head";
@@ -21,7 +22,6 @@ import { convertPrice } from "../../../lib/currencyConverter";
 import { formatCurrency } from "../../../lib/formatCurrency";
 import { useState } from "react";
 import toast, { Toaster } from "react-hot-toast";
-// import { StarIcon } from "@heroicons/react/24/solid";
 import { ArrowPathIcon, ShieldCheckIcon } from "@heroicons/react/24/outline";
 import LoadingPage from "@/components/LoadingPage";
 import ReportProductForm from "../../reports/ReportProducrForm/page";
@@ -31,6 +31,7 @@ import Image from "next/image";
 import { ProductImageInput } from "../../../types/type";
 import { useWishlist } from "@/hooks/useWishlist";
 import { HeartIcon, StarIcon } from "lucide-react";
+import { useCart } from "@/hooks/useCart"; // 🔹 NEW
 
 export default function ProductPage() {
   const { currency } = useCurrency();
@@ -44,6 +45,12 @@ export default function ProductPage() {
   const [expanded, setExpanded] = useState(false);
   const MAX_LENGTH = 200;
   const toggleReadMore = () => setExpanded(!expanded);
+
+  // 🔹 ADD_TO_CART with cart refetch
+  const [addToCart] = useMutation(ADD_TO_CART, {
+    refetchQueries: [{ query: GET_CART }],
+    awaitRefetchQueries: true,
+  });
 
   const slug =
     typeof params?.slug === "string"
@@ -72,7 +79,6 @@ export default function ProductPage() {
   const { data: companyData } = useQuery(GET_COMPANIES);
   const companies = companyData?.getCompanies;
 
-  const [addToCart] = useMutation(ADD_TO_CART);
   const { data: getCategories } = useSWR(GET_PARENT_CATEGORIES);
   const [createReview] = useMutation(CREATE_REVIEW, {
     refetchQueries: [{ query: GET_PRODUCT_BY_SLUG, variables: { slug } }],
@@ -87,6 +93,17 @@ export default function ProductPage() {
 
   const product = data?.productBySlug;
   console.log("Product from query via product page", product);
+
+  // 🔹 Read cart items to know if this product/variation is already in cart
+  const { items } = useCart();
+  const isInCart =
+    !!product &&
+    items.some((item: any) => {
+      const sameProduct = item.product.id === product.id;
+      const sameVariation =
+        (item.variation?.id || null) === (selectedVariation?.id || null);
+      return sameProduct && sameVariation;
+    });
 
   const productCategory = categories.find(
     (cat: { id: any }) => cat.id === product?.category?.id
@@ -146,15 +163,20 @@ export default function ProductPage() {
       </div>
     );
 
+  // 🔹 TOGGLE-aware add-to-cart
   const handleAddToCart = async () => {
+    if (product.variations?.length > 0 && !selectedVariation) {
+      toast.error("Please select an option before adding to cart");
+      return;
+    }
+
+    // If already in cart, just inform user (no duplicate add)
+    if (isInCart) {
+      toast.success("This item is already in your cart");
+      return;
+    }
+
     try {
-      console.log("selectedVariation at addToCart:", selectedVariation);
-
-      if (product.variations?.length > 0 && !selectedVariation) {
-        toast.error("Please select an option before adding to cart");
-        return;
-      }
-
       toast.dismiss();
       await addToCart({
         variables: {
@@ -166,7 +188,7 @@ export default function ProductPage() {
 
       const toastMessage = selectedVariation
         ? `${selectedVariation.size} ${selectedVariation.color} added to cart!`
-        : `Default product added to cart!`;
+        : `Product added to cart!`;
 
       toast.success(toastMessage);
     } catch (err) {
@@ -509,20 +531,20 @@ export default function ProductPage() {
                   {/* Improved Action Buttons for Mobile */}
                   <div className="mt-8 flex flex-col sm:flex-row gap-4">
                     {/* Add to Cart Button */}
-                    <button
-                      onClick={handleAddToCart}
-                      className="flex items-center justify-center bg-rose-500 text-white px-6 py-4 rounded-full hover:bg-rose-600 transition-all duration-300 shadow-md hover:shadow-lg font-medium w-full sm:w-auto"
-                    >
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        className="h-6 w-6 mr-2"
-                        viewBox="0 0 20 20"
-                        fill="currentColor"
-                      >
-                        <path d="M3 1a1 1 0 000 2h1.22l.305 1.222a.997.997 0 00.01.042l1.358 5.43-.893.892C3.74 11.846 4.632 14 6.414 14H15a1 1 0 000-2H6.414l1-1H14a1 1 0 00.894-.553l3-6A1 1 0 0017 3H6.28l-.31-1.243A1 1 0 005 1H3zM16 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zM6.5 18a1.5 1.5 0 100-3 1.5 1.5 0 000 3z" />
-                      </svg>
-                      Add to Cart
-                    </button>
+                     <button
+        onClick={handleAddToCart}
+        className="flex items-center justify-center bg-rose-500 text-white px-6 py-4 rounded-full hover:bg-rose-600 transition-all duration-300 shadow-md hover:shadow-lg font-medium w-full sm:w-auto"
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          className="h-6 w-6 mr-2"
+          viewBox="0 0 20 20"
+          fill="currentColor"
+        >
+          <path d="M3 1a1 1 0 000 2h1.22l.305 1.222a.997.997 0 00.01.042l1.358 5.43-.893.892C3.74 11.846 4.632 14 6.414 14H15a1 1 0 000-2H6.414l1-1H14a1 1 0 00.894-.553l3-6A1 1 0 0017 3H6.28l-.31-1.243A1 1 0 005 1H3zM16 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zM6.5 18a1.5 1.5 0 100-3 1.5 1.5 0 000 3z" />
+        </svg>
+        {isInCart ? "Added to Cart" : "Add to Cart"}
+      </button>
                     {/* Wishlist Button */}
                     <button
                       onClick={(e) => {

@@ -7,7 +7,7 @@ import Image from "next/image";
 import toast from "react-hot-toast";
 import { useEffect, useState, useMemo } from "react";
 
-import { GET_WISHLISTS } from "../../graphql/queries";
+import { GET_WISHLISTS, GET_CART } from "../../graphql/queries";
 import { REMOVE_WISHLIST_ITEM, ADD_TO_CART } from "../../graphql/mutations";
 
 import { Wishlist as WishItem } from "../../types/type";
@@ -18,6 +18,7 @@ import { useCurrency } from "../../providers/CurrencyContext";
 import TopHeader from "../../components/TopHeader";
 import MiddleHeader from "../../components/MiddleHeader";
 import Footer from "../../components/Footer";
+import { useCart } from "@/hooks/useCart"; // 🔹 NEW
 
 export default function Wishlist() {
   const { data, loading, error } = useQuery(GET_WISHLISTS);
@@ -32,7 +33,23 @@ export default function Wishlist() {
     refetchQueries: [{ query: GET_WISHLISTS }],
   });
 
-  const [addToCart] = useMutation(ADD_TO_CART);
+  // 🔹 ADD_TO_CART that also refreshes the shared cart query
+  const [addToCart] = useMutation(ADD_TO_CART, {
+    refetchQueries: [{ query: GET_CART }],
+    awaitRefetchQueries: true,
+  });
+
+  // 🔹 Read cart so wishlist can know which items are already in cart
+  const { items: cartItems } = useCart();
+
+  // helper: is this wishlist item already in the cart?
+  const isInCart = (wishItem: WishItem) =>
+    cartItems.some((cartItem: any) => {
+      const sameProduct = cartItem.product.id === wishItem.product.id;
+      const sameVariation =
+        (cartItem.variation?.id || null) === (wishItem.variation?.id || null);
+      return sameProduct && sameVariation;
+    });
 
   // Load wishlist items
   useEffect(() => {
@@ -122,7 +139,6 @@ export default function Wishlist() {
         });
       }
 
-      // Show toast with buttons
       toast.custom(
         (t) => (
           <div
@@ -329,7 +345,17 @@ export default function Wishlist() {
                       )}
                     </td>
 
-                    <td className="px-6 py-4">
+                    <td className="px-6 py-4 space-x-3">
+                      {isInCart(item) ? (
+                        <span className="text-sm font-medium text-green-600">
+                          Already in cart
+                        </span>
+                      ) : (
+                        <span className="text-sm text-gray-500">
+                          Not in cart
+                        </span>
+                      )}
+
                       <button
                         onClick={() => handleRemove(item.id)}
                         className="text-sm font-medium text-red-600 hover:text-red-800"

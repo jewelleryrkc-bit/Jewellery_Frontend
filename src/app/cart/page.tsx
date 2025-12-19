@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-/* eslint-disable @next/next/no-html-link-for-pages */
+/* eslint-disable @typescript-eslint/no-unused-vars */
 "use client";
 
 import { useQuery, useMutation } from "@apollo/client";
@@ -9,8 +9,9 @@ import {
   UPDATE_CART_ITEM,
   REMOVE_FROM_CART,
   APPLY_COUPON,
+  SET_CART_SHIPPING_ADDRESS,
 } from "../../graphql/mutations";
-import { GET_CART } from "../../graphql/queries";
+import { GET_CART, MY_ADDRESSES } from "../../graphql/queries";
 import { useCurrency } from "../../providers/CurrencyContext";
 import { convertPrice } from "../../lib/currencyConverter";
 import { formatCurrency } from "../../lib/formatCurrency";
@@ -19,9 +20,10 @@ import TopHeader from "../../components/TopHeader";
 import MiddleHeader from "../../components/MiddleHeader";
 import Footer from "../../components/Footer";
 import { useRouter } from "next/navigation";
-import { ChevronRight } from "lucide-react";
 import LoadingPage from "@/components/LoadingPage";
 import Image from "next/image";
+import Link from "next/link";
+import { ChevronRight, ChevronDown, MapPin, X } from "lucide-react";
 
 export default function CartPage() {
   const { currency } = useCurrency();
@@ -40,17 +42,23 @@ export default function CartPage() {
   const [selectedPayment, setSelectedPayment] = useState<"standard" | "paypal">(
     "standard"
   );
+  const [showCouponList, setShowCouponList] = useState(false);
+  const [showShippingForm, setShowShippingForm] = useState(false);
 
   const [isGiftModalOpen, setIsGiftModalOpen] = useState(false);
   const [selectedGiftItem, setSelectedGiftItem] = useState<CartItem | null>(
     null
   );
 
+  const { data: addressData } = useQuery(MY_ADDRESSES);
+  const [setCartShippingAddress] = useMutation(SET_CART_SHIPPING_ADDRESS);
+  const addresses = addressData?.myAddresses ?? [];
+  const [selectedAddressId, setSelectedAddressId] = useState<string | null>(
+    null
+  );
+
   // UPDATE QUANTITY
-  const handleUpdateQuantity = async (
-    itemId: string,
-    newQuantity: number
-  ) => {
+  const handleUpdateQuantity = async (itemId: string, newQuantity: number) => {
     if (newQuantity <= 0) {
       alert("Quantity cannot be 0. Use Remove to delete item.");
       return;
@@ -83,9 +91,9 @@ export default function CartPage() {
   };
 
   // REVIEW PRODUCT
- const handleReviewProduct = (slug: string) => {
-  router.push(`/products/${slug}`);
-};
+  const handleReviewProduct = (slug: string) => {
+    router.push(`/products/${slug}`);
+  };
 
   // OPEN GIFT MODAL
   const handleAddToGift = (item: CartItem) => {
@@ -108,12 +116,6 @@ export default function CartPage() {
     };
 
     console.log("Gift data saved:", giftData);
-    // OPTIONAL: send to backend if you extend your mutation
-    // await updateCartItem({
-    //   variables: { itemId: giftData.itemId, giftMessage: { recipientName: giftData.recipientName, message: giftData.message } },
-    //   refetchQueries: [{ query: GET_CART }],
-    // });
-
     setIsGiftModalOpen(false);
     setSelectedGiftItem(null);
   };
@@ -151,6 +153,7 @@ export default function CartPage() {
     try {
       const couponCode = await applyCouponToCart({
         variables: { code: couponInput },
+        refetchQueries: [{ query: GET_CART }],
       });
 
       if (couponCode.data?.applyCouponToCart?.id) {
@@ -177,8 +180,34 @@ export default function CartPage() {
   }
 
   const cart: Cart = data?.getCart;
-  console.log("Cart data", cart.items[0]);
+  if (!cart) {
+    return (
+      <div className="text-center mt-10">
+        Cart not found. Please add items again.
+      </div>
+    );
+  }
 
+  const coupons = (cart as any)?.availableCoupons ?? [];
+
+  function createUserAddress(arg0: {
+    variables: {
+      data: {
+        streetAddress: string;
+        streetAddress2: string;
+        city: string;
+        state: string;
+        country: string;
+        zipcode: string;
+      };
+    };
+  }) {
+    throw new Error("Function not implemented.");
+  }
+
+  function refetchMyAddresses() {
+    throw new Error("Function not implemented.");
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -217,289 +246,356 @@ export default function CartPage() {
                 Start adding some products to your cart.
               </p>
               <div className="mt-6">
-                <a
+                <Link
                   href="/products"
                   className="inline-flex items-center px-4 py-2 border border-transparent rounded-md text-sm font-light text-white bg-gray-800 hover:bg-gray-700 transition-colors"
                 >
                   Continue Shopping
-                </a>
+                </Link>
               </div>
             </div>
           ) : (
             <div className="divide-y divide-gray-200">
               {/* CART ITEMS */}
-               {cart.items.map((item: CartItem) => {
-                              const primaryImage =
-                                item.product.images?.find((img: any) => img.isPrimary)?.url ??
-                                item.product.images?.[0]?.url ??
-                                null;
-                              console.log("Row item id", item.id, "product", item.product.id);
-              
-                              return (
-                                <div
-                                  key={item.id}
-                                  className="px-4 sm:px-6 py-5 border-b border-gray-100 hover:bg-gray-50 transition-colors"
-                                >
-                                  {/* Row 1: image | (name+brand) | qty | price */}
-                                  <div className="flex items-center gap-4 sm:gap-6">
-                                    {/* Product Image */}
-                                    <div className="flex-shrink-0 w-16 h-16 sm:w-20 sm:h-20 bg-white rounded-md overflow-hidden border border-gray-200 flex items-center justify-center">
-                                      {primaryImage ? (
-                                        <Image
-                                          src={primaryImage}
-                                          alt={item.product.name}
-                                          width={80}
-                                          height={80}
-                                          className="w-full h-full object-cover"
-                                        />
-                                      ) : (
-                                        "🛍️"
-                                      )}
-                                    </div>
-              
-                                    {/* Name + brand + controls */}
-                                    <div className="flex-1 flex items-center justify-between gap-4">
-                                      <div className="min-w-0 max-w-md">
-                                        <h2 className="text-sm sm:text-base font-medium text-gray-900 truncate">
-                                          {item.product.name}
-                                        </h2>
-                                        <p className="mt-1 text-xs sm:text-sm text-gray-500">
-                                          {item.product.brand|| "Brand name"}
-                                          {item.variation?.size && (
-                                            <span className="ml-1">
-                                              • {item.variation.size}
-                                            </span>
-                                          )}
-                                        </p>
-                                      </div>
-              
-                                      {/* Quantity */}
-                                      <div className="flex items-center gap-2 flex-shrink-0">
-                                        <button
-                                          onClick={() => {
-                                            const newQty = item.quantity - 1;
-                                            if (newQty > 0) {
-                                              handleUpdateQuantity(item.id, newQty);
-                                            } else {
-                                              alert("Use Remove button to delete this item");
-                                            }
-                                          }}
-                                          disabled={item.quantity <= 1}
-                                          className="w-7 h-7 flex items-center justify-center rounded-full border border-gray-300 text-sm text-gray-700 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                                        >
-                                          −
-                                        </button>
-                                        <span className="w-8 text-center text-sm font-medium text-gray-900 min-w-[2rem]">
-                                          {item.quantity}
-                                        </span>
-                                        <button
-                                          onClick={() => {
-                                            const newQty = item.quantity + 1;
-                                            handleUpdateQuantity(item.id, newQty);
-                                          }}
-                                          className="w-7 h-7 flex items-center justify-center rounded-full border border-gray-300 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
-                                        >
-                                          +
-                                        </button>
-                                      </div>
-              
-                                      {/* Price */}
-                                      <p className="text-sm sm:text-base font-semibold text-gray-900 flex-shrink-0 text-right w-24">
-                                        {formatCurrency(
-                                          convertPrice(item.price, currency),
-                                          currency
-                                        )}
-                                      </p>
-                                    </div>
-                                  </div>
-              
-                                  {/* Row 2: gift status + actions */}
-                                  <div className="mt-2 flex items-center justify-between">
-                                    <span className="text-xs sm:text-sm text-gray-500">
-                                      {item.giftMessage && (
-                                        <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800">
-                                          Gift note added
-                                        </span>
-                                      )}
-                                    </span>
-              
-                                    <div className="flex items-center gap-4 text-xs sm:text-sm">
-                                      <button
-                                        onClick={() => handleRemoveItem(item.id)}
-                                        className="text-red-600 hover:text-red-700 font-light transition-colors"
-                                      >
-                                        Remove
-                                      </button>
-                                      <button
-                                        onClick={() => handleReviewProduct(item.product.slug)}
-                                        className="text-gray-700 hover:text-gray-900 font-light transition-colors"
-                                      >
-                                        Review
-                                      </button>
-                                      <button
-                                        onClick={() => handleAddToGift(item)}
-                                        className="text-indigo-600 hover:text-indigo-500 font-light transition-colors"
-                                      >
-                                        Add to gift
-                                      </button>
-                                    </div>
-                                  </div>
-                                </div>
-                              );
-                            })}
+              {cart.items.map((item: CartItem) => {
+                const primaryImage =
+                  item.product.images?.find((img: any) => img.isPrimary)?.url ??
+                  item.product.images?.[0]?.url ??
+                  null;
+                console.log("Row item id", item.id, "product", item.product.id);
+
+                return (
+                  <div
+                    key={item.id}
+                    className="px-4 sm:px-6 py-5 border-b border-gray-100 hover:bg-gray-50 transition-colors"
+                  >
+                    {/* Row 1: image | (name+brand) | qty | price */}
+                    <div className="flex items-center gap-4 sm:gap-6">
+                      {/* Product Image */}
+                      <div className="flex-shrink-0 w-16 h-16 sm:w-20 sm:h-20 bg-white rounded-md overflow-hidden border border-gray-200 flex items-center justify-center">
+                        {primaryImage ? (
+                          <Image
+                            src={primaryImage}
+                            alt={item.product.name}
+                            width={80}
+                            height={80}
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          "🛍️"
+                        )}
+                      </div>
+
+                      {/* Name + brand + controls */}
+                      <div className="flex-1 flex items-center justify-between gap-4">
+                        <div className="min-w-0 max-w-md">
+                          <h2 className="text-sm sm:text-base font-medium text-gray-900 truncate">
+                            {item.product.name}
+                          </h2>
+                          <p className="mt-1 text-xs sm:text-sm text-gray-500">
+                            {item.product.brand || "Brand name"}
+                            {item.variation?.size && (
+                              <span className="ml-1">
+                                • {item.variation.size}
+                              </span>
+                            )}
+                          </p>
+                        </div>
+
+                        {/* Quantity */}
+                        <div className="flex items-center gap-2 flex-shrink-0">
+                          <button
+                            onClick={() => {
+                              const newQty = item.quantity - 1;
+                              if (newQty > 0) {
+                                handleUpdateQuantity(item.id, newQty);
+                              } else {
+                                alert("Use Remove button to delete this item");
+                              }
+                            }}
+                            disabled={item.quantity <= 1}
+                            className="w-7 h-7 flex items-center justify-center rounded-full border border-gray-300 text-sm text-gray-700 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                          >
+                            −
+                          </button>
+                          <span className="w-8 text-center text-sm font-medium text-gray-900 min-w-[2rem]">
+                            {item.quantity}
+                          </span>
+                          <button
+                            onClick={() => {
+                              const newQty = item.quantity + 1;
+                              handleUpdateQuantity(item.id, newQty);
+                            }}
+                            className="w-7 h-7 flex items-center justify-center rounded-full border border-gray-300 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+                          >
+                            +
+                          </button>
+                        </div>
+
+                        {/* Price */}
+                        <p className="text-sm sm:text-base font-semibold text-gray-900 flex-shrink-0 text-right w-24">
+                          {formatCurrency(
+                            convertPrice(item.price, currency),
+                            currency
+                          )}
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Row 2: gift status + actions */}
+                    <div className="mt-2 flex items-center justify-between">
+                      <span className="text-xs sm:text-sm text-gray-500">
+                        {item.giftMessage && (
+                          <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800">
+                            Gift note added
+                          </span>
+                        )}
+                      </span>
+
+                      <div className="flex items-center gap-4 text-xs sm:text-sm">
+                        <button
+                          onClick={() => handleRemoveItem(item.id)}
+                          className="text-red-600 hover:text-red-700 font-light transition-colors"
+                        >
+                          Remove
+                        </button>
+                        <button
+                          onClick={() => handleReviewProduct(item.product.slug)}
+                          className="text-gray-700 hover:text-gray-900 font-light transition-colors"
+                        >
+                          Review
+                        </button>
+                        <button
+                          onClick={() => handleAddToGift(item)}
+                          className="text-indigo-600 hover:text-indigo-500 font-light transition-colors"
+                        >
+                          Add to gift
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
 
               {/* GIFT MODAL */}
-                {isGiftModalOpen && selectedGiftItem && (() => {
-                             const giftPrimaryImage =
-          selectedGiftItem.product.images?.find(
-            (img: any) => img.isPrimary
-          )?.url ??
-          selectedGiftItem.product.images?.[0]?.url ??
-          null;
+              {isGiftModalOpen &&
+                selectedGiftItem &&
+                (() => {
+                  const giftPrimaryImage =
+                    selectedGiftItem.product.images?.find(
+                      (img: any) => img.isPrimary
+                    )?.url ??
+                    selectedGiftItem.product.images?.[0]?.url ??
+                    null;
 
-        console.log(
-  "Gift item id",
-  selectedGiftItem.id,
-  "product",
-  selectedGiftItem.product.id
-);
-              
-                              return (
-                                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-                                  <div className="bg-white rounded-2xl shadow-2xl max-w-sm w-full max-height-[90vh] overflow-hidden">
-                                    {/* Header */}
-                                    <div className="p-6 border-b border-gray-200 bg-gradient-to-r from-indigo-50 to-purple-50">
-                                      <div className="flex items-center gap-4 mb-3">
-                                        <div className="w-14 h-14 bg-white rounded-lg overflow-hidden border flex-shrink-0">
-                                          {giftPrimaryImage ? (
-                                            <Image
-                                              src={giftPrimaryImage}
-                                              alt={selectedGiftItem.product.name}
-                                              width={56}
-                                              height={56}
-                                              className="w-full h-full object-cover"
-                                            />
-                                          ) : (
-                                            "🛍️"
-                                          )}
-                                        </div>
-                                        <div className="min-w-0 flex-1">
-                                          <h3 className="font-semibold text-gray-900 text-lg truncate">
-                                            {selectedGiftItem.product.name}
-                                          </h3>
-                                          <p className="text-sm text-gray-500">
-                                            {selectedGiftItem.product.brand || "Brand"}
-                                            {selectedGiftItem.variation?.size &&
-                                              ` • ${selectedGiftItem.variation.size}`}
-                                          </p>
-                                        </div>
-                                      </div>
-                                      <p className="text-sm text-gray-600">
-                                        Add a personal gift message
-                                      </p>
-                                    </div>
-              
-                                    {/* Form */}
-                                    <form
-                                      onSubmit={handleGiftSubmit}
-                                      className="p-6 space-y-4"
-                                    >
-                                      <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                                          Recipient&apos;s name *
-                                        </label>
-                                        <input
-                                          name="recipientName"
-                                          type="text"
-                                          required
-                                          maxLength={50}
-                                          placeholder="Sarah Johnson"
-                                          className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all"
-                                        />
-                                      </div>
-              
-                                      <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                                          Gift message (optional)
-                                        </label>
-                                        <textarea
-                                          name="message"
-                                          rows={4}
-                                          maxLength={200}
-                                          placeholder="Write something special for your friend..."
-                                          className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 resize-vertical transition-all"
-                                        />
-                                      </div>
-              
-                                      <div className="flex gap-3 pt-4">
-                                        <button
-                                          type="button"
-                                          onClick={() => {
-                                            setIsGiftModalOpen(false);
-                                            setSelectedGiftItem(null);
-                                          }}
-                                          className="flex-1 px-4 py-3 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-xl transition-colors"
-                                        >
-                                          Cancel
-                                        </button>
-                                        <button
-                                          type="submit"
-                                          className="flex-1 px-4 py-3 text-sm font-semibold text-white bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 rounded-xl transition-all shadow-sm"
-                                        >
-                                          Save Gift Note
-                                        </button>
-                                      </div>
-                                    </form>
-                                  </div>
-                                </div>
-                              );
-                            })()}
+                  console.log(
+                    "Gift item id",
+                    selectedGiftItem.id,
+                    "product",
+                    selectedGiftItem.product.id
+                  );
 
-              {/* ORDER SUMMARY (unchanged logic) */}
+                  return (
+                    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+                      <div className="bg-white rounded-2xl shadow-2xl max-w-sm w-full max-height-[90vh] overflow-hidden">
+                        {/* Header */}
+                        <div className="p-6 border-b border-gray-200 bg-gradient-to-r from-indigo-50 to-purple-50">
+                          <div className="flex items-center gap-4 mb-3">
+                            <div className="w-14 h-14 bg-white rounded-lg overflow-hidden border flex-shrink-0">
+                              {giftPrimaryImage ? (
+                                <Image
+                                  src={giftPrimaryImage}
+                                  alt={selectedGiftItem.product.name}
+                                  width={56}
+                                  height={56}
+                                  className="w-full h-full object-cover"
+                                />
+                              ) : (
+                                "🛍️"
+                              )}
+                            </div>
+                            <div className="min-w-0 flex-1">
+                              <h3 className="font-semibold text-gray-900 text-lg truncate">
+                                {selectedGiftItem.product.name}
+                              </h3>
+                              <p className="text-sm text-gray-500">
+                                {selectedGiftItem.product.brand || "Brand"}
+                                {selectedGiftItem.variation?.size &&
+                                  ` • ${selectedGiftItem.variation.size}`}
+                              </p>
+                            </div>
+                          </div>
+                          <p className="text-sm text-gray-600">
+                            Add a personal gift message
+                          </p>
+                        </div>
+
+                        {/* Form */}
+                        <form
+                          onSubmit={handleGiftSubmit}
+                          className="p-6 space-y-4"
+                        >
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                              Recipient&apos;s name *
+                            </label>
+                            <input
+                              name="recipientName"
+                              type="text"
+                              required
+                              maxLength={50}
+                              placeholder="Sarah Johnson"
+                              className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all"
+                            />
+                          </div>
+
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                              Gift message (optional)
+                            </label>
+                            <textarea
+                              name="message"
+                              rows={4}
+                              maxLength={200}
+                              placeholder="Write something special for your friend..."
+                              className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 resize-vertical transition-all"
+                            />
+                          </div>
+
+                          <div className="flex gap-3 pt-4">
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setIsGiftModalOpen(false);
+                                setSelectedGiftItem(null);
+                              }}
+                              className="flex-1 px-4 py-3 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-xl transition-colors"
+                            >
+                              Cancel
+                            </button>
+                            <button
+                              type="submit"
+                              className="flex-1 px-4 py-3 text-sm font-semibold text-white bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 rounded-xl transition-all shadow-sm"
+                            >
+                              Save Gift Note
+                            </button>
+                          </div>
+                        </form>
+                      </div>
+                    </div>
+                  );
+                })()}
+
+              {/* ORDER SUMMARY */}
               <div className="px-4 sm:px-6 py-5">
-                <div className="border-t border-gray-200 pt-4">
+                {/* Right: order summary */}
+                <div className="border border-gray-200 rounded-lg p-4">
                   <h2 className="text-lg font-medium text-gray-900 mb-4">
                     Order Summary
                   </h2>
 
                   <div className="space-y-3">
+                    {/* Subtotal */}
                     <div className="flex justify-between">
                       <p className="text-sm text-gray-600 font-light">
                         Subtotal
                       </p>
                       <p className="text-sm font-medium">
                         {formatCurrency(
-                          convertPrice(cart?.total, currency),
+                          convertPrice(
+                            cart?.subtotal ?? cart?.total ?? 0,
+                            currency
+                          ),
                           currency
                         )}
                       </p>
                     </div>
 
+                    {/* Shipping */}
                     <div className="flex justify-between">
                       <p className="text-sm text-gray-600 font-light">
                         Shipping
                       </p>
-                      <p className="text-sm font-medium">Free</p>
+                      <p className="text-sm font-medium">
+                        {cart?.sellerProvidesShipping && cart.shippingAmount > 0
+                          ? formatCurrency(
+                              convertPrice(cart.shippingAmount, currency),
+                              currency
+                            )
+                          : "Free"}
+                      </p>
                     </div>
 
-                    <div className="mt-6 flex gap-2">
-                      <input
-                        type="text"
-                        value={couponInput}
-                        onChange={(e) => setCouponInput(e.target.value)}
-                        placeholder="Enter coupon code"
-                        className="flex-1 border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-indigo-500 focus:border-indigo-500"
-                      />
+                    {/* Coupon row */}
+
+                    <div className="mt-6 flex flex-col gap-2 sm:flex-row sm:items-start">
+                      {/* Left: input + dropdown + message */}
+                      <div className="flex-1">
+                        <div className="relative flex items-center">
+                          <input
+                            type="text"
+                            value={couponInput}
+                            onChange={(e) => {
+                              setCouponInput(e.target.value);
+                              setShowCouponList(true);
+                            }}
+                            onFocus={() => setShowCouponList(true)}
+                            placeholder="Enter or select coupon"
+                            className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-indigo-500 focus:border-indigo-500 pr-8"
+                          />
+                          <button
+                            type="button"
+                            className="absolute right-2 inset-y-0 flex items-center justify-center text-gray-500"
+                            onClick={() => setShowCouponList((prev) => !prev)}
+                          >
+                            <ChevronDown className="h-4 w-4" />
+                          </button>
+
+                          {showCouponList &&
+                            Array.isArray(coupons) &&
+                            coupons.length > 0 && (
+                              <ul className="absolute left-0 right-0 z-10 mt-1 max-h-40 overflow-y-auto rounded-md border border-gray-200 bg-white text-sm shadow-lg">
+                                {coupons.map((c: any) => (
+                                  <li
+                                    key={c.id}
+                                    className="cursor-pointer px-3 py-1 hover:bg-gray-100"
+                                    onClick={() => {
+                                      setCouponInput(c.code);
+                                      setShowCouponList(false);
+                                    }}
+                                  >
+                                    {c.code} – {c.discountPercentage}% off
+                                  </li>
+                                ))}
+                              </ul>
+                            )}
+                        </div>
+
+                        {/* message directly under input */}
+                        {Array.isArray(coupons) && coupons.length === 0 && (
+                          <p className="mt-1 text-xs text-gray-500">
+                            No coupons available
+                          </p>
+                        )}
+                      </div>
+
+                      {/* Right: buttons */}
                       <button
                         onClick={handleApplyCouponCode}
-                        className={`bg-gray-800 border border-transparent rounded-md px-4 py-2 text-sm font-light text-white hover:bg-gray-700 transition-colors ${
-                          isApplyingCode
-                            ? "opacity-75 cursor-not-allowed"
-                            : ""
+                        className={`mt-2 sm:mt-0 h-10 px-4 bg-gray-800 border border-transparent rounded-md text-sm font-light text-white hover:bg-gray-700 transition-colors ${
+                          isApplyingCode ? "opacity-75 cursor-not-allowed" : ""
                         }`}
                         disabled={isApplyingCode}
                       >
                         {isApplyingCode ? "Applying..." : "Apply"}
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => setShowShippingForm(true)}
+                        className="mt-2  sm:mt-0 text-xs text-indigo-600 hover:text-indigo-500 whitespace-nowrap"
+                      >
+                        Change shipment details
                       </button>
                     </div>
 
@@ -509,11 +605,12 @@ export default function CartPage() {
                       </div>
                     )}
 
+                    {/* Total */}
                     <div className="flex justify-between pt-3 border-t border-gray-200">
                       <p className="text-base font-medium">Total</p>
                       <p className="text-base font-bold text-green-600">
                         {formatCurrency(
-                          convertPrice(cart?.total, currency),
+                          convertPrice(cart?.total ?? 0, currency),
                           currency
                         )}
                       </p>
@@ -607,17 +704,222 @@ export default function CartPage() {
                   <div className="mt-4 text-center text-sm text-gray-500 font-light">
                     <p>
                       or{" "}
-                      <a
+                      <Link
                         href="/products"
                         className="text-indigo-600 hover:text-indigo-500"
                       >
                         Continue Shopping{" "}
                         <ChevronRight className="inline h-4 w-4" />
-                      </a>
+                      </Link>
                     </p>
                   </div>
                 </div>
               </div>
+
+              {/* SHIPPING ADDRESS MODAL (place once, after Order Summary) */}
+              {showShippingForm && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+                  <div className="w-full max-w-lg bg-white rounded-xl shadow-xl">
+                    {/* Header */}
+                    <div className="flex items-center justify-between border-b px-6 py-4">
+                      <h3 className="text-lg font-medium text-gray-900">
+                        Shipping address
+                      </h3>
+                      <button
+                        type="button"
+                        onClick={() => setShowShippingForm(false)}
+                        className="text-sm text-gray-500 hover:text-gray-700"
+                      >
+                        <X className="h-4 w-4" />
+                      </button>
+                    </div>
+
+                    {/* Body */}
+                    <div className="px-6 py-4 space-y-4">
+                      {addresses.length === 0 ? (
+                        // NO ADDRESS: show full shipping form
+                        <form
+                          className="space-y-4"
+                          onSubmit={async (e) => {
+                            e.preventDefault();
+                            const form = e.currentTarget;
+                            const data = new FormData(form);
+
+                            const input = {
+                              streetAddress: String(
+                                data.get("streetAddress") || ""
+                              ),
+                              streetAddress2: String(
+                                data.get("streetAddress2") || ""
+                              ),
+                              city: String(data.get("city") || ""),
+                              state: String(data.get("state") || ""),
+                              country: String(data.get("country") || ""),
+                              zipcode: String(data.get("zipcode") || ""),
+                            };
+
+                            await createUserAddress({
+                              variables: { data: input },
+                            });
+
+                            await refetchMyAddresses();
+                            setShowShippingForm(false);
+                          }}
+                        >
+                          <h4 className="text-sm font-medium text-gray-900 mb-2">
+                            Product shipping address
+                          </h4>
+
+                          {/* Country */}
+                          <div>
+                            <label className="flex items-center gap-1 text-xs font-medium text-gray-500 mb-1">
+                              <MapPin className="h-3 w-3" />
+                              Country or region
+                            </label>
+                            <select
+                              name="country"
+                              className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:ring-indigo-500 focus:border-indigo-500"
+                              defaultValue="United States"
+                              required
+                            >
+                              <option value="United States">
+                                United States
+                              </option>
+                              <option value="India">India</option>
+                            </select>
+                          </div>
+
+                          {/* Street address */}
+                          <div>
+                            <label className="text-xs font-medium text-gray-500 mb-1 block">
+                              Street address
+                            </label>
+                            <input
+                              name="streetAddress"
+                              type="text"
+                              required
+                              className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:ring-indigo-500 focus:border-indigo-500"
+                            />
+                          </div>
+
+                          {/* Street address 2 */}
+                          <div>
+                            <label className="text-xs font-medium text-gray-500 mb-1 block">
+                              Street address 2 (optional)
+                            </label>
+                            <input
+                              name="streetAddress2"
+                              type="text"
+                              className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:ring-indigo-500 focus:border-indigo-500"
+                            />
+                          </div>
+
+                          {/* City / State / ZIP */}
+                          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                            <div>
+                              <label className="text-xs font-medium text-gray-500 mb-1 block">
+                                City
+                              </label>
+                              <input
+                                name="city"
+                                type="text"
+                                required
+                                className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:ring-indigo-500 focus:border-indigo-500"
+                              />
+                            </div>
+                            <div>
+                              <label className="text-xs font-medium text-gray-500 mb-1 block">
+                                State / Province / Region
+                              </label>
+                              <input
+                                name="state"
+                                type="text"
+                                required
+                                className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:ring-indigo-500 focus:border-indigo-500"
+                              />
+                            </div>
+                            <div>
+                              <label className="text-xs font-medium text-gray-500 mb-1 block">
+                                ZIP code
+                              </label>
+                              <input
+                                name="zipcode"
+                                type="text"
+                                required
+                                className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:ring-indigo-500 focus:border-indigo-500"
+                              />
+                            </div>
+                          </div>
+
+                          {/* Buttons */}
+                          <div className="flex justify-end gap-2 mt-4">
+                            <button
+                              type="button"
+                              onClick={() => setShowShippingForm(false)}
+                              className="px-4 py-2 text-sm rounded-md border border-gray-300 text-gray-700 hover:bg-gray-100"
+                            >
+                              Cancel
+                            </button>
+                            <button
+                              type="submit"
+                              className="px-5 py-2 text-sm rounded-md bg-blue-600 text-white hover:bg-blue-700"
+                            >
+                              Save shipping address
+                            </button>
+                          </div>
+                        </form>
+                      ) : (
+                        // HAS ADDRESSES: select existing
+                        <>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">
+                            Choose a saved address
+                          </label>
+                          <select
+                            value={selectedAddressId ?? addresses[0]?.id ?? ""}
+                            onChange={(e) =>
+                              setSelectedAddressId(e.target.value)
+                            }
+                            className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:ring-indigo-500 focus:border-indigo-500"
+                          >
+                            {addresses.map((a: any) => (
+                              <option key={a.id} value={a.id}>
+                                {a.streetAddress}, {a.city}, {a.state},{" "}
+                                {a.country}
+                              </option>
+                            ))}
+                          </select>
+
+                          <div className="flex justify-end gap-2 mt-4">
+                            <button
+                              type="button"
+                              onClick={() => setShowShippingForm(false)}
+                              className="px-4 py-2 text-sm rounded-md border border-gray-300 text-gray-700 hover:bg-gray-100"
+                            >
+                              Cancel
+                            </button>
+                            <button
+                              type="button"
+                              onClick={async () => {
+                                const idToUse =
+                                  selectedAddressId ?? addresses[0]?.id;
+                                if (!idToUse) return;
+                                await setCartShippingAddress({
+                                  variables: { addressId: idToUse },
+                                  refetchQueries: [{ query: GET_CART }],
+                                });
+                                setShowShippingForm(false);
+                              }}
+                              className="px-5 py-2 text-sm rounded-md bg-blue-600 text-white hover:bg-blue-700"
+                            >
+                              Use this address
+                            </button>
+                          </div>
+                        </>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           )}
         </div>

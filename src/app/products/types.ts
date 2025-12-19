@@ -33,6 +33,10 @@ export interface CartItem {
 
 
 export interface Cart {
+  availableCoupons: boolean;
+  availableCoupons: boolean;
+  shippingAmount: number;
+  sellerProvidesShipping: boolean;
   id: string;
   total: number;
   subtotal: number;

@@ -495,7 +495,7 @@ export const FILTERED_PRODUCTS_QUERY = gql`
       reviewCount
       slug
       averageRating
-      wishlistCount 
+      wishlistCount
       category {
         id
         name
@@ -899,7 +899,15 @@ export const GET_CART = gql`
       id
       createdAt
       updatedAt
+      subtotal
       total
+      shippingAmount
+      sellerProvidesShipping
+      discountAmount
+      discountCoupon {
+        code
+        discountPercentage
+      }
       user {
         id
         username
@@ -934,6 +942,20 @@ export const GET_CART = gql`
           size
           price
         }
+      }
+      availableCoupons {
+        id
+        code
+        discountPercentage
+      }
+      shippingAddress {
+        id
+        streetAddress
+        streetAddress2
+        city
+        state
+        country
+        zipcode
       }
     }
   }

@@ -821,6 +821,23 @@ export const DELETE_MULTIPLE_PRODUCTS = gql`
   }
 `;
 
+export const SET_CART_SHIPPING_ADDRESS = gql`
+  mutation SetCartShippingAddress($addressId: ID!) {
+    setCartShippingAddress(addressId: $addressId) {
+      id
+      shippingAddress {
+        id
+        streetAddress
+        streetAddress2
+        city
+        state
+        country
+        zipcode
+      }
+    }
+  }
+`;
+
 export const CREATE_DISCOUNT = gql`
   mutation CreateDiscount($input: DiscountInput!) {
     createDiscount(input: $input) {
