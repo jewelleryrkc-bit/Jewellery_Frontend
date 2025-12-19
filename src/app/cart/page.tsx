@@ -10,8 +10,8 @@ import {
   REMOVE_FROM_CART,
   APPLY_COUPON,
   SET_CART_SHIPPING_ADDRESS,
-  CREATE_CHECKOUT,    // ← ADD
-  COMPLETE_CHECKOUT
+  CREATE_CHECKOUT, // ← ADD
+  COMPLETE_CHECKOUT,
 } from "../../graphql/mutations";
 import { GET_CART, MY_ADDRESSES } from "../../graphql/queries";
 import { useCurrency } from "../../providers/CurrencyContext";
@@ -27,6 +27,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { ChevronRight, ChevronDown, MapPin, X } from "lucide-react";
 import { toast } from "react-hot-toast";
+import { COUNTRIES } from "@/lib/countries";
 
 export default function CartPage() {
   const { currency } = useCurrency();
@@ -125,48 +126,46 @@ export default function CartPage() {
 
   // CHECKOUT
   const [createCheckout] = useMutation(CREATE_CHECKOUT);
-const [completeCheckout] = useMutation(COMPLETE_CHECKOUT);
+  const [completeCheckout] = useMutation(COMPLETE_CHECKOUT);
 
-const handleCheckout = async () => {
-  setIsCheckingOut(true);
-  setCheckoutError(null);
+  const handleCheckout = async () => {
+    setIsCheckingOut(true);
+    setCheckoutError(null);
 
-  try {
-    // 1. Create checkout session
-    const { data } = await createCheckout();
-    const { checkoutId, razorpayOrderId, amount } = data.createCheckout;
+    try {
+      // 1. Create checkout session
+      const { data } = await createCheckout();
+      const { checkoutId, razorpayOrderId, amount } = data.createCheckout;
 
-    // 2. MOCK Razorpay (Real popup when credentials ready)
-    // Simulate payment success (2 second delay for realism)
-    setTimeout(async () => {
-      try {
-        // Generate mock payment ID
-        const mockPaymentId = `mock_payment_${Date.now()}`;
-        
-        // 3. Complete checkout
-        const { data: orderData } = await completeCheckout({
-          variables: { 
-            checkoutId, 
-            razorpayPaymentId: mockPaymentId
-          }
-        });
-        
-        router.push(`/orders/${orderData.completeCheckout.id}`);
-        toast.success("✅ Order placed successfully! (Mock Payment)");
-      } catch (e: any) {
-        setCheckoutError(e.message);
-        toast.error("Checkout failed");
-      } finally {
-        setIsCheckingOut(false);
-      }
-    }, 2000); // 2s "payment processing"
+      // 2. MOCK Razorpay (Real popup when credentials ready)
+      // Simulate payment success (2 second delay for realism)
+      setTimeout(async () => {
+        try {
+          // Generate mock payment ID
+          const mockPaymentId = `mock_payment_${Date.now()}`;
 
-  } catch (e: any) {
-    setCheckoutError(e.message);
-    toast.error("Checkout failed");
-  }
-};
+          // 3. Complete checkout
+          const { data: orderData } = await completeCheckout({
+            variables: {
+              checkoutId,
+              razorpayPaymentId: mockPaymentId,
+            },
+          });
 
+          router.push(`/orders/${orderData.completeCheckout.id}`);
+          toast.success("✅ Order placed successfully! (Mock Payment)");
+        } catch (e: any) {
+          setCheckoutError(e.message);
+          toast.error("Checkout failed");
+        } finally {
+          setIsCheckingOut(false);
+        }
+      }, 2000); // 2s "payment processing"
+    } catch (e: any) {
+      setCheckoutError(e.message);
+      toast.error("Checkout failed");
+    }
+  };
 
   // APPLY COUPON
   const handleApplyCouponCode = async () => {
@@ -804,16 +803,15 @@ const handleCheckout = async () => {
                               <MapPin className="h-3 w-3" />
                               Country or region
                             </label>
-                            <select
-                              name="country"
-                              className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:ring-indigo-500 focus:border-indigo-500"
-                              defaultValue="United States"
-                              required
-                            >
-                              <option value="United States">
-                                United States
-                              </option>
-                              <option value="India">India</option>
+                            <select name="country" defaultValue="US" required>
+                              {COUNTRIES.map((country) => (
+                                <option
+                                  key={country.value}
+                                  value={country.value}
+                                >
+                                  {country.label}
+                                </option>
+                              ))}
                             </select>
                           </div>
 
