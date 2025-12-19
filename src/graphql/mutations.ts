@@ -1182,6 +1182,29 @@ export const CREATE_CHECKOUT_WITH_PAYPAL = gql`
   }
 `;
 
+
+export const CREATE_CHECKOUT = gql`
+  mutation {
+    createCheckout {
+      checkoutId
+      razorpayOrderId
+      amount
+    }
+  }
+`;
+
+export const COMPLETE_CHECKOUT = gql`
+  mutation CompleteCheckout($checkoutId: String!, $razorpayPaymentId: String!) {
+    completeCheckout(checkoutId: $checkoutId, razorpayPaymentId: $razorpayPaymentId) {
+      id
+      status
+      total
+    }
+  }
+`;
+
+
+
 export const CREATE_ORDERR = gql`
   mutation {
     createOrderr {

@@ -10,6 +10,8 @@ import {
   REMOVE_FROM_CART,
   APPLY_COUPON,
   SET_CART_SHIPPING_ADDRESS,
+  CREATE_CHECKOUT,    // ← ADD
+  COMPLETE_CHECKOUT
 } from "../../graphql/mutations";
 import { GET_CART, MY_ADDRESSES } from "../../graphql/queries";
 import { useCurrency } from "../../providers/CurrencyContext";
@@ -24,6 +26,7 @@ import LoadingPage from "@/components/LoadingPage";
 import Image from "next/image";
 import Link from "next/link";
 import { ChevronRight, ChevronDown, MapPin, X } from "lucide-react";
+import { toast } from "react-hot-toast";
 
 export default function CartPage() {
   const { currency } = useCurrency();
@@ -121,24 +124,49 @@ export default function CartPage() {
   };
 
   // CHECKOUT
-  const handleCheckout = async () => {
-    setIsCheckingOut(true);
-    setCheckoutError(null);
+  const [createCheckout] = useMutation(CREATE_CHECKOUT);
+const [completeCheckout] = useMutation(COMPLETE_CHECKOUT);
 
-    try {
-      const order = await createOrder();
-      if (order.data?.createOrder?.id) {
-        router.push(`/orders/${order.data.createOrder.id}`);
+const handleCheckout = async () => {
+  setIsCheckingOut(true);
+  setCheckoutError(null);
+
+  try {
+    // 1. Create checkout session
+    const { data } = await createCheckout();
+    const { checkoutId, razorpayOrderId, amount } = data.createCheckout;
+
+    // 2. MOCK Razorpay (Real popup when credentials ready)
+    // Simulate payment success (2 second delay for realism)
+    setTimeout(async () => {
+      try {
+        // Generate mock payment ID
+        const mockPaymentId = `mock_payment_${Date.now()}`;
+        
+        // 3. Complete checkout
+        const { data: orderData } = await completeCheckout({
+          variables: { 
+            checkoutId, 
+            razorpayPaymentId: mockPaymentId
+          }
+        });
+        
+        router.push(`/orders/${orderData.completeCheckout.id}`);
+        toast.success("✅ Order placed successfully! (Mock Payment)");
+      } catch (e: any) {
+        setCheckoutError(e.message);
+        toast.error("Checkout failed");
+      } finally {
+        setIsCheckingOut(false);
       }
-    } catch (e) {
-      console.error("Checkout error:", e);
-      setCheckoutError(
-        e instanceof Error ? e.message : "Checkout failed. Please try again."
-      );
-    } finally {
-      setIsCheckingOut(false);
-    }
-  };
+    }, 2000); // 2s "payment processing"
+
+  } catch (e: any) {
+    setCheckoutError(e.message);
+    toast.error("Checkout failed");
+  }
+};
+
 
   // APPLY COUPON
   const handleApplyCouponCode = async () => {
@@ -262,7 +290,7 @@ export default function CartPage() {
                   item.product.images?.find((img: any) => img.isPrimary)?.url ??
                   item.product.images?.[0]?.url ??
                   null;
-                console.log("Row item id", item.id, "product", item.product.id);
+                // console.log("Row item id", item.id, "product", item.product.id);
 
                 return (
                   <div
@@ -388,12 +416,12 @@ export default function CartPage() {
                     selectedGiftItem.product.images?.[0]?.url ??
                     null;
 
-                  console.log(
-                    "Gift item id",
-                    selectedGiftItem.id,
-                    "product",
-                    selectedGiftItem.product.id
-                  );
+                  // console.log(
+                  //   "Gift item id",
+                  //   selectedGiftItem.id,
+                  //   "product",
+                  //   selectedGiftItem.product.id
+                  // );
 
                   return (
                     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
