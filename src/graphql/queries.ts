@@ -1378,3 +1378,13 @@ export const GET_PAYPAL_ORDER_STATUS = gql`
     getPayPalOrderStatus(paypalOrderId: $paypalOrderId)
   }
 `;
+
+export const GET_SELLER_STATS = gql`
+  query SellerStats($days: Int!) {
+    sellerStats(days: $days) {
+      listingViews
+      salesAmount
+      ordersCount
+    }
+  }
+`;

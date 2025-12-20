@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
@@ -41,6 +42,8 @@ export type AddProductFormInputs = {
 
   // Optional fields
   subcategory?: string;
+  customCategory?: string;
+  customSubcategory?: string;
   material?: string;
   size?: string;
   weight?: string;
@@ -490,12 +493,23 @@ export default function AddProduct() {
   const {
     register,
     handleSubmit,
+    watch,
+    setValue,
     formState: { errors, isSubmitting },
   } = useForm<AddProductFormInputs>();
 
-  const addVariation = () => {
-    setVariations([...variations, { size: "", color: "", price: 0, stock: 0 }]);
-  };
+  /*************  ✨ Windsurf Command ⭐  *************/
+  /**
+   * Adds a new variation to the list of variations.
+   * The new variation is initialized with empty size and color, and price and stock set to 0.
+   */
+  /*******  e8011c6e-4ab4-4038-b26c-26096d150e60  *******/ const addVariation =
+    () => {
+      setVariations([
+        ...variations,
+        { size: "", color: "", price: 0, stock: 0 },
+      ]);
+    };
 
   const updateVariation = (
     index: number,
@@ -605,8 +619,21 @@ export default function AddProduct() {
         }
       }
 
+      const categoryId = data.category === "OTHER" ? null : data.category;
+
+      const subcategoryId =
+        data.subcategory === "OTHER_SUB" ? null : data.subcategory;
+
+      const selectedCategory = watch("category");
+
+
       const productInput = {
         ...data,
+        categoryId,
+        subcategoryId,
+        customCategory: data.category === "OTHER" ? data.customCategory : null,
+        customSubcategory:
+          data.subcategory === "OTHER_SUB" ? data.customSubcategory : null,
         variations: variations,
         features: featuresString,
         ...(data.subcategory ? { subcategory: data.subcategory } : {}),
@@ -793,52 +820,72 @@ export default function AddProduct() {
 
           {/* Category Section */}
           <div className="space-y-4">
-            <h3 className="text-lg font-semibold text-gray-700">Category</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <select
-                  {...register("category", {
-                    required: "Category is required",
-                  })}
-                  onChange={(e) => setSelectedParentCategory(e.target.value)}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition"
-                >
-                  <option value="">Select a Category</option>
-                  {categoriesLoading ? (
-                    <option disabled>Loading categories...</option>
-                  ) : (
-                    categoriesData?.parentCategories?.map((cat: any) => (
-                      <option key={cat.id} value={cat.id}>
-                        {cat.name}
-                      </option>
-                    ))
-                  )}
-                </select>
-              </div>
+  <h3 className="text-lg font-semibold text-gray-700">Category</h3>
+  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <div>
+      <select
+        {...register("category", {
+          required: "Category is required",
+        })}
+        onChange={(e) => {
+          const value = e.target.value;
+          // only load subcategories when a real category is chosen
+          setSelectedParentCategory(value !== "OTHER" ? value : null);
+          setValue("category", value); // from useForm
+        }}
+        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition"
+      >
+        <option value="">Select a Category</option>
+        {categoriesData?.parentCategories?.map((cat: any) => (
+          <option key={cat.id} value={cat.id}>
+            {cat.name}
+          </option>
+        ))}
+        <option value="OTHER">Other</option>
+      </select>
+    </div>
 
-              {selectedParentCategory && (
-                <div>
-                  <select
-                    {...register("subcategory", {
-                      required: "Subcategory is required",
-                    })}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition"
-                  >
-                    <option value="">Select a Subcategory</option>
-                    {subcategoriesLoading ? (
-                      <option disabled>Loading subcategories...</option>
-                    ) : (
-                      subcategoriesData?.subcategories?.map((sub: any) => (
-                        <option key={sub.id} value={sub.id}>
-                          {sub.name}
-                        </option>
-                      ))
-                    )}
-                  </select>
-                </div>
-              )}
-            </div>
-          </div>
+    {/* Subcategory field */}
+    <div>
+      {/* CASE 1: category is NOT "Other" -> normal dropdown */}
+      {watch("category") !== "OTHER" && selectedParentCategory && (
+        <select
+          {...register("subcategory", {
+            required: "Subcategory is required",
+          })}
+          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition"
+        >
+          <option value="">Select a Subcategory</option>
+          {subcategoriesData?.subcategories?.map((sub: any) => (
+            <option key={sub.id} value={sub.id}>
+              {sub.name}
+            </option>
+          ))}
+        </select>
+      )}
+
+      {/* CASE 2: category IS "Other" -> text input aligned with category */}
+      {watch("category") === "OTHER" && (
+        <div className="mt-0">
+          <input
+            type="text"
+            placeholder="Enter what you want to sell (e.g. Custom Necklace)"
+            {...register("subcategory", {
+              required: "Please enter what you want to sell",
+            })}
+            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition"
+          />
+          {errors.subcategory && (
+            <p className="text-red-500 text-sm mt-1">
+              {errors.subcategory.message}
+            </p>
+          )}
+        </div>
+      )}
+    </div>
+  </div>
+</div>
+
 
           {/* Brand Section */}
           <div className="space-y-2">

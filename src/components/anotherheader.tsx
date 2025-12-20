@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 
+
 export default function AnotherHeader() {
   return (
     <div className="flex justify-between items-center px-6 py-4 bg-white relative">
